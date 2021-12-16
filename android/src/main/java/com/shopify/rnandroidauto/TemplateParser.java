@@ -59,7 +59,7 @@ public class TemplateParser {
         try {
             loading = map.getBoolean("isLoading");
         } catch (NoSuchKeyException e) {
-            loading = children.size() == 0;
+            loading = children == null || children.size() == 0;
         }
 
         paneBuilder.setIsLoading(false);
@@ -88,7 +88,15 @@ public class TemplateParser {
 
         PaneTemplate.Builder builder = PaneTemplate.builder(paneBuilder.build());
 
-        builder.setTitle(map.getString("title"));
+        String title = map.getString("title");
+        if ( title == null || title.length() == 0 )
+        {
+            builder.setTitle("<No Title>");
+        }
+        else
+        {
+            builder.setTitle(title);
+        }
 
         try {
             builder.setHeaderAction(getHeaderAction(map.getString("headerAction")));
@@ -107,34 +115,42 @@ public class TemplateParser {
 
     private ActionStrip parseActionStrip(ReadableMap map) {
         ActionStrip.Builder builder = ActionStrip.builder();
+        
+        if (map != null) {
 
-        ReadableArray actions = map.getArray("actions");
-
-        for (int i = 0; i < actions.size(); i++) {
-            ReadableMap actionMap = actions.getMap(i);
-            Action action = parseAction(actionMap);
-            builder.addAction(action);
+            ReadableArray actions = map.getArray("actions");
+            
+            for (int i = 0; i < actions.size(); i++) {
+                ReadableMap actionMap = actions.getMap(i);
+                Action action = parseAction(actionMap);
+                builder.addAction(action);
+            }
+            
+            return builder.build();
+        } else {
+            return null;
         }
-
-        return builder.build();
     }
 
     private Action parseAction(ReadableMap map) {
         Action.Builder builder = Action.builder();
 
-        builder.setTitle(map.getString("title"));
-        try {
-            builder.setBackgroundColor(getColor(map.getString("backgroundColor")));
-        } catch (NoSuchKeyException e) {
-        }
+        if (map != null) {
 
-        try {
-            int onPress = map.getInt("onPress");
-
-            builder.setOnClickListener(() -> {
-                invokeCallback(onPress);
-            });
-        } catch (NoSuchKeyException e) {
+            builder.setTitle(map.getString("title"));
+            try {
+                builder.setBackgroundColor(getColor(map.getString("backgroundColor")));
+            } catch (NoSuchKeyException e) {
+            }
+            
+            try {
+                int onPress = map.getInt("onPress");
+                
+                builder.setOnClickListener(() -> {
+                    invokeCallback(onPress);
+                });
+            } catch (NoSuchKeyException e) {
+            }
         }
 
         return builder.build();
@@ -177,7 +193,7 @@ public class TemplateParser {
         try {
             loading = map.getBoolean("isLoading");
         } catch (NoSuchKeyException e) {
-            loading = children.size() == 0;
+            loading = children == null || children.size() == 0;
         }
 
         builder.setIsLoading(loading);
@@ -318,13 +334,17 @@ public class TemplateParser {
     }
 
     private Action getHeaderAction(String actionName) {
-        switch (actionName) {
-            case "back":
+        if ( actionName == null ) {
+            return null;
+        } else {
+            switch (actionName) {
+                case "back":
                 return Action.BACK;
-            case "app_icon":
+                case "app_icon":
                 return Action.APP_ICON;
-            default:
+                default:
                 return null;
+            }
         }
     }
 
