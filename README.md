@@ -52,7 +52,7 @@ In order to start your app's android auto screen, you need to register a root co
 import React from "react";
 import { AppRegistry } from "react-native";
 
-import { render } from "./src/car/android-auto/module/AndroidAutoReconciler";
+import { render } from "react-native-android-auto";
 
 // RootApp -> The component
 
