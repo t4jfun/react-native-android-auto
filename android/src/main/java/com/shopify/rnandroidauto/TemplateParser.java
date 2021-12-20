@@ -298,7 +298,20 @@ public class TemplateParser {
       ReadableArray texts = rowRenderMap.getArray("texts");
 
       for (int i = 0; texts != null && i < texts.size(); i++) {
-        builder.addText(texts.getString(i));
+         if (rowRenderMap.getString("type") == "place") {
+          int distanceKm = 1000;
+          SpannableString description = new SpannableString("   \u00b7 " + texts.getString(i));
+          description.setSpan(
+                  DistanceSpan.create(Distance.create(distanceKm, Distance.UNIT_MILES)),
+                  0,
+                  1,
+                  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+          description.setSpan(
+                  ForegroundCarColorSpan.create(CarColor.BLUE), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+          builder.addText(description);
+        } else {
+          builder.addText(texts.getString(i));
+        }
       }
     } catch (NoSuchKeyException e) {}
 
