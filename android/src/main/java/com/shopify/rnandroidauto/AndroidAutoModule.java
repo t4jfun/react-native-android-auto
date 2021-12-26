@@ -49,7 +49,9 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
   public void invalidate(String name) {
     CarScreen screen = getScreen(name);
     Log.d("ReactAUTO", "screen" +  screen);
+    if (screen == mScreenManager.getTop()) {
       screen.invalidate();
+    }
   }
 
   @ReactMethod
