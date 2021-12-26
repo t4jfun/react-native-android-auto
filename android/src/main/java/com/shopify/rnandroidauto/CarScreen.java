@@ -1,15 +1,15 @@
 package com.shopify.rnandroidauto;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.ReactContext;
-import com.google.android.libraries.car.app.CarContext;
-import com.google.android.libraries.car.app.Screen;
-import com.google.android.libraries.car.app.model.Pane;
-import com.google.android.libraries.car.app.model.PaneTemplate;
-import com.google.android.libraries.car.app.model.Template;
+
+import androidx.car.app.CarContext;
+import androidx.car.app.Screen;
+import androidx.car.app.model.Pane;
+import androidx.car.app.model.PaneTemplate;
+import androidx.car.app.model.Template;
+
 
 public class CarScreen extends Screen {
     private Template mTemplate;
@@ -24,13 +24,13 @@ public class CarScreen extends Screen {
 
     @NonNull
     @Override
-    public Template getTemplate() {
+    public Template onGetTemplate() {
         if (mTemplate != null) {
             return mTemplate;
         }
 
-        return PaneTemplate.builder(
-                Pane.builder().setIsLoading(true).build()
+        return new PaneTemplate.Builder(
+                new Pane.Builder().setLoading(true).build()
         ).setTitle("Loading...").build();
     }
 }

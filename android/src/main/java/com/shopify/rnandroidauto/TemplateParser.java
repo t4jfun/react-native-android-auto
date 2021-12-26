@@ -1,25 +1,33 @@
 package com.shopify.rnandroidauto;
 
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import com.facebook.react.bridge.NoSuchKeyException;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableNativeMap;
-import com.google.android.libraries.car.app.model.Action;
-import com.google.android.libraries.car.app.model.ActionStrip;
-import com.google.android.libraries.car.app.model.CarColor;
-import com.google.android.libraries.car.app.model.ItemList;
-import com.google.android.libraries.car.app.model.LatLng;
-import com.google.android.libraries.car.app.model.ListTemplate;
-import com.google.android.libraries.car.app.model.Metadata;
-import com.google.android.libraries.car.app.model.Pane;
-import com.google.android.libraries.car.app.model.PaneTemplate;
-import com.google.android.libraries.car.app.model.Place;
-import com.google.android.libraries.car.app.model.PlaceListMapTemplate;
-import com.google.android.libraries.car.app.model.PlaceMarker;
-import com.google.android.libraries.car.app.model.Row;
-import com.google.android.libraries.car.app.model.Template;
+
+import androidx.car.app.model.Action;
+import androidx.car.app.model.ActionStrip;
+import androidx.car.app.model.CarColor;
+import androidx.car.app.model.Distance;
+import androidx.car.app.model.DistanceSpan;
+import androidx.car.app.model.ForegroundCarColorSpan;
+import androidx.car.app.model.ItemList;
+import androidx.car.app.model.CarLocation;
+import androidx.car.app.model.ListTemplate;
+import androidx.car.app.model.Metadata;
+import androidx.car.app.model.Pane;
+import androidx.car.app.model.PaneTemplate;
+import androidx.car.app.model.Place;
+import androidx.car.app.model.PlaceListMapTemplate;
+import androidx.car.app.model.SectionedItemList;
+import androidx.car.app.model.Row;
+import androidx.car.app.model.Template;
+import androidx.car.app.model.PlaceMarker;
+
 import java.util.ArrayList;
 
 public class TemplateParser {
@@ -41,15 +49,15 @@ public class TemplateParser {
       case "pane-template":
         return parsePaneTemplate(renderMap);
       default:
-        return PaneTemplate
-          .builder(Pane.builder().setIsLoading(true).build())
+        return new PaneTemplate
+          .Builder(new Pane.Builder().setLoading(true).build())
           .setTitle("Pane Template")
           .build();
     }
   }
 
   private PaneTemplate parsePaneTemplate(ReadableMap map) {
-    Pane.Builder paneBuilder = Pane.builder();
+    Pane.Builder paneBuilder = new Pane.Builder();
 
     ReadableArray children = map.getArray("children");
 
@@ -61,7 +69,7 @@ public class TemplateParser {
       loading = children == null || children.size() == 0;
     }
 
-    paneBuilder.setIsLoading(loading);
+    paneBuilder.setLoading(loading);
 
     if (!loading) {
       ArrayList<Action> actions = new ArrayList();
@@ -85,11 +93,11 @@ public class TemplateParser {
 
       if (actions.size() > 0) {
         Log.d("ReactAUTO", "Setting actions to pane: " + actions);
-        paneBuilder.setActions(actions);
+        paneBuilder.addAction(actions.get(0));
       }
     }
 
-    PaneTemplate.Builder builder = PaneTemplate.builder(paneBuilder.build());
+    PaneTemplate.Builder builder = new PaneTemplate.Builder(paneBuilder.build());
 
     String title = map.getString("title");
     if (title == null || title.length() == 0) {
@@ -104,14 +112,18 @@ public class TemplateParser {
 
     try {
       ReadableMap actionStripMap = map.getMap("actionStrip");
-      builder.setActionStrip(parseActionStrip(actionStripMap));
-    } catch (NoSuchKeyException e) {}
+//      TODO
+//      builder.setActionStrip(parseActionStrip(actionStripMap));
+      builder.setActionStrip(new ActionStrip.Builder().addAction(new Action.Builder().setTitle("More").build()).build()).build();
+    } catch (NoSuchKeyException e) {
+      Log.d("ReactAuto", "no such key " + e);
+    }
 
     return builder.build();
   }
 
   private ActionStrip parseActionStrip(ReadableMap map) {
-    ActionStrip.Builder builder = ActionStrip.builder();
+    ActionStrip.Builder builder = new ActionStrip.Builder();
 
     if (map != null) {
       ReadableArray actions = map.getArray("actions");
@@ -128,7 +140,7 @@ public class TemplateParser {
   }
 
   private Action parseAction(ReadableMap map) {
-    Action.Builder builder = Action.builder();
+    Action.Builder builder = new Action.Builder();
 
     if (map != null) {
       builder.setTitle(map.getString("title"));
@@ -181,7 +193,7 @@ public class TemplateParser {
   }
 
   private PlaceListMapTemplate parsePlaceListMapTemplate(ReadableMap map) {
-    PlaceListMapTemplate.Builder builder = PlaceListMapTemplate.builder();
+    PlaceListMapTemplate.Builder builder = new PlaceListMapTemplate.Builder();
 
     builder.setTitle(map.getString("title"));
     ReadableArray children = map.getArray("children");
@@ -199,10 +211,10 @@ public class TemplateParser {
     }
 
     Log.d("ReactAUTO", "Rendering " + (loading ? "Yes" : "No"));
-    builder.setIsLoading(loading);
+    builder.setLoading(loading);
 
     if (!loading) {
-      ItemList.Builder itemListBuilder = ItemList.builder();
+      ItemList.Builder itemListBuilder = new ItemList.Builder();
 
       for (int i = 0; i < children.size(); i++) {
         ReadableMap child = children.getMap(i);
@@ -228,7 +240,7 @@ public class TemplateParser {
   private ListTemplate parseListTemplateChildren(ReadableMap map) {
     ReadableArray children = map.getArray("children");
 
-    ListTemplate.Builder builder = ListTemplate.builder();
+    ListTemplate.Builder builder = new ListTemplate.Builder();
 
     boolean loading;
 
@@ -238,17 +250,14 @@ public class TemplateParser {
       loading = children.size() == 0;
     }
 
-    builder.setIsLoading(loading);
+    builder.setLoading(loading);
 
     if (!loading) {
       for (int i = 0; i < children.size(); i++) {
         ReadableMap child = children.getMap(i);
         String type = child.getString("type");
         if (type.equals("item-list")) {
-          builder.addList(
-            parseItemListChildren(child),
-            child.getString("header")
-          );
+          builder.addSectionedList(SectionedItemList.create(parseItemListChildren(child), child.getString("header")));
         }
       }
     }
@@ -258,8 +267,9 @@ public class TemplateParser {
     } catch (NoSuchKeyException e) {}
 
     try {
-      ReadableMap actionStripMap = map.getMap("actionStrip");
-      builder.setActionStrip(parseActionStrip(actionStripMap));
+//      ReadableMap actionStripMap = map.getMap("actionStrip");
+      // TODO
+//      builder.setActionStrip(parseActionStrip(actionStripMap));
     } catch (NoSuchKeyException e) {}
 
     builder.setTitle(map.getString("title"));
@@ -268,7 +278,7 @@ public class TemplateParser {
   }
 
   private ItemList parseItemListChildren(ReadableMap itemList) {
-    ItemList.Builder builder = ItemList.builder();
+    ItemList.Builder builder = new ItemList.Builder();
 
     if (itemList != null) {
       ReadableArray children = itemList.getArray("children");
@@ -282,15 +292,18 @@ public class TemplateParser {
     }
 
     try {
-      builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
-    } catch (NoSuchKeyException e) {}
+//      builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
+      builder.setNoItemsMessage("No results");
+    } catch (NoSuchKeyException e) {
+      Log.d("setNoItemsMessage", "error: " + e);
+    }
 
     return builder.build();
   }
 
   @NonNull
   private Row buildRow(ReadableMap rowRenderMap) {
-    Row.Builder builder = Row.builder();
+    Row.Builder builder = new Row.Builder();
 
     builder.setTitle(rowRenderMap.getString("title"));
 
@@ -318,7 +331,7 @@ public class TemplateParser {
     try {
       int onPress = rowRenderMap.getInt("onPress");
 
-      builder.setIsBrowsable(true);
+      builder.setBrowsable(true);
 
       builder.setOnClickListener(
         () -> {
@@ -334,21 +347,21 @@ public class TemplateParser {
     return builder.build();
   }
 
+
   private Metadata parseMetaData(ReadableMap map) {
     if (map != null) {
       switch (map.getString("type")) {
         case "place":
-          return Metadata.ofPlace(
-            Place
-              .builder(
-                LatLng.create(
-                  map.getDouble("latitude"),
-                  map.getDouble("longitude")
-                )
-              )
-              .setMarker(PlaceMarker.getDefault())
-              .build()
-          );
+          return new Metadata.Builder(
+
+          ).setPlace(
+                  new Place.Builder(
+                          CarLocation.create(
+                                  map.getDouble("latitude"), map.getDouble("longitude")
+                          )
+                  ).setMarker(new PlaceMarker.Builder().setColor(CarColor.BLUE).build()).build()
+          ).build();
+
         default:
           return null;
       }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import androidx.activity.OnBackPressedCallback;
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -13,10 +14,10 @@ import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.debug.DevSettingsModule;
-import com.google.android.libraries.car.app.CarContext;
-import com.google.android.libraries.car.app.CarToast;
-import com.google.android.libraries.car.app.ScreenManager;
-import com.google.android.libraries.car.app.model.Template;
+import androidx.car.app.CarContext;
+import androidx.car.app.CarToast;
+import androidx.car.app.ScreenManager;
+import androidx.car.app.model.Template;
 import java.util.WeakHashMap;
 
 @ReactModule(name = AndroidAutoModule.MODULE_NAME)
@@ -47,9 +48,8 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void invalidate(String name) {
     CarScreen screen = getScreen(name);
-    if (screen == mScreenManager.getTop()) {
+    Log.d("ReactAUTO", "screen" +  screen);
       screen.invalidate();
-    }
   }
 
   @ReactMethod
