@@ -68,19 +68,6 @@ public final class CarService extends CarAppService {
             public Screen onCreateScreen(@Nullable Intent intent) {
                 screen = new CarScreen(getCarContext(), mReactInstanceManager.getCurrentReactContext());
                 screen.setMarker("root");
-//                Lifecycle lifecycle = getLifecycle();
-//                lifecycle.addObserver(new LifecycleObserver() {
-//                    public void onDestroy(@NonNull LifecycleOwner owner) {
-//                    new LifecycleObserver() {
-//                        public void onDestroy(@NonNull LifecycleOwner owner) {
-//                            Log.d("ReactAUTO", "ondestroy");
-//                            CarContext context = getCarContext();
-//                            context.stopService(new Intent(context, CarService.class));
-//                        }
-//                    };
-//                        mReactInstanceManager.destroy();
-//                    }
-//                });
                 runJsApplication();
                 return screen;
             }

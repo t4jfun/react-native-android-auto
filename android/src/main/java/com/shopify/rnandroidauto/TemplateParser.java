@@ -112,8 +112,8 @@ public class TemplateParser {
 
     try {
       ReadableMap actionStripMap = map.getMap("actionStrip");
-//      TODO
-//      builder.setActionStrip(parseActionStrip(actionStripMap));
+
+      builder.setActionStrip(parseActionStrip(actionStripMap));
       builder.setActionStrip(new ActionStrip.Builder().addAction(new Action.Builder().setTitle("More").build()).build()).build();
     } catch (NoSuchKeyException e) {
       Log.d("ReactAuto", "no such key " + e);
@@ -267,9 +267,8 @@ public class TemplateParser {
     } catch (NoSuchKeyException e) {}
 
     try {
-//      ReadableMap actionStripMap = map.getMap("actionStrip");
-      // TODO
-//      builder.setActionStrip(parseActionStrip(actionStripMap));
+      ReadableMap actionStripMap = map.getMap("actionStrip");
+      builder.setActionStrip(parseActionStrip(actionStripMap));
     } catch (NoSuchKeyException e) {}
 
     builder.setTitle(map.getString("title"));
@@ -292,7 +291,7 @@ public class TemplateParser {
     }
 
     try {
-//      builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
+      builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
       builder.setNoItemsMessage("No results");
     } catch (NoSuchKeyException e) {
       Log.d("setNoItemsMessage", "error: " + e);
