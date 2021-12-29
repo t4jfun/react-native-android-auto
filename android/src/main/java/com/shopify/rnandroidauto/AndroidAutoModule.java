@@ -3,6 +3,9 @@ package com.shopify.rnandroidauto;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.activity.OnBackPressedCallback;
 
 import com.facebook.react.bridge.Callback;
@@ -25,6 +28,7 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
 
   static final String MODULE_NAME = "CarModule";
 
+  private final Handler mHandler = new Handler(Looper.getMainLooper());
   private static ReactApplicationContext mReactContext;
   private CarContext mCarContext;
   private CarScreen mCurrentCarScreen;
@@ -48,10 +52,12 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void invalidate(String name) {
     CarScreen screen = getScreen(name);
-    Log.d("ReactAUTO", "screen" +  screen);
-    if (screen == mScreenManager.getTop()) {
-      screen.invalidate();
-    }
+    mHandler.postDelayed(() -> {
+      if (screen == mScreenManager.getTop()) {
+        screen.invalidate();
+      }
+    }, 2000);
+
   }
 
   @ReactMethod
@@ -97,14 +103,25 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
     screen.setTemplate(template);
     carScreens.put(name, screen);
     mCurrentCarScreen = screen;
-    mScreenManager.push(screen);
+
+    mHandler.post(new Runnable() {
+      @Override
+      public void run() {
+        mScreenManager.push(screen);
+      }
+    });
   }
 
   @ReactMethod
   public void popScreen() {
-    mScreenManager.pop();
-    removeScreen(mCurrentCarScreen);
-    mCurrentCarScreen = (CarScreen) mScreenManager.getTop();
+    mHandler.post(new Runnable() {
+      @Override
+      public void run() {
+        mScreenManager.pop();
+        removeScreen(mCurrentCarScreen);
+        mCurrentCarScreen = (CarScreen) mScreenManager.getTop();
+      }
+    });
   }
 
   @ReactMethod

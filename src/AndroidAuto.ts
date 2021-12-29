@@ -7,7 +7,8 @@ const invalidate = debounce((screenName: string) => {
   NativeModules.CarModule.invalidate(screenName);
 }, 50);
 
-const eventEmitter = new NativeEventEmitter(NativeModules.CarModule);
+// const eventEmitter = new NativeEventEmitter(NativeModules.CarModule);
+const eventEmitter = new NativeEventEmitter();
 
 function prepareTemplate(name: string, template: AndroidAutoTemplate) {
   let currentIndex = 0;
