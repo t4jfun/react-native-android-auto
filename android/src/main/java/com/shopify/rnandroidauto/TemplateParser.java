@@ -291,7 +291,9 @@ public class TemplateParser {
     }
 
     try {
-      builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
+      // TODO - figure out what this is for
+      // it currently throws a null error
+      // builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
       builder.setNoItemsMessage("No results");
     } catch (NoSuchKeyException e) {
       Log.d("setNoItemsMessage", "error: " + e);
