@@ -59,6 +59,7 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
           screen.invalidate();
         }
       }
+    });
   }
 
   @ReactMethod
