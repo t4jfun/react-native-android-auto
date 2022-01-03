@@ -185,6 +185,7 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
       @Override
       public void handleOnBackPressed() {
         Log.d("ReactAUTO", "Back button pressed");
+        mScreenManager.pop();
         sendEvent("android_auto:back_button", new WritableNativeMap());
       }
     };

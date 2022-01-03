@@ -221,7 +221,7 @@ public class TemplateParser {
         String type = child.getString("type");
         Log.d("ReactAUTO", "Adding " + type + " to row");
 
-        if (type.equals("row")) {
+        if (type.equals("row") || type.equals("place")) {
           itemListBuilder.addItem(buildRow(child));
         }
       }
@@ -284,7 +284,7 @@ public class TemplateParser {
       for (int i = 0; i < children.size(); i++) {
         ReadableMap child = children.getMap(i);
         String type = child.getString("type");
-        if (type.equals("row")) {
+        if (type.equals("row") ) {
           builder.addItem(buildRow(child));
         }
       }
@@ -312,7 +312,7 @@ public class TemplateParser {
       ReadableArray texts = rowRenderMap.getArray("texts");
 
       for (int i = 0; texts != null && i < texts.size(); i++) {
-         if (rowRenderMap.getString("type") == "place") {
+         if (rowRenderMap.getString("type").equals("place")) {
           int distanceKm = 1000;
           SpannableString description = new SpannableString("   \u00b7 " + texts.getString(i));
           description.setSpan(
@@ -372,6 +372,7 @@ public class TemplateParser {
   }
 
   private Action getHeaderAction(String actionName) {
+    Log.d("ReactAUTO", "actionName " + actionName);
     if (actionName == null) {
       return null;
     } else {
