@@ -13,8 +13,10 @@ import androidx.car.app.model.Template;
 
 public class CarScreen extends Screen {
     private Template mTemplate;
+    @NonNull
+    private final SurfaceRenderer mSurfaceRenderer;
 
-    public CarScreen(CarContext carContext, ReactContext reactContext) {
+    public CarScreen(CarContext carContext, ReactContext reactContext, @NonNull SurfaceRenderer surfaceRenderer) {
         super(carContext);
     }
 

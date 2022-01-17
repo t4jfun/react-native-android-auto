@@ -42,6 +42,8 @@ public class TemplateParser {
     String type = renderMap.getString("type");
 
     switch (type) {
+      case "navigation-template":
+        return parseNavigationTemplate(renderMap);
       case "list-template":
         return parseListTemplateChildren(renderMap);
       case "place-list-map-template":
@@ -236,6 +238,19 @@ public class TemplateParser {
 
     return builder.build();
   }
+
+  private NavigationTemplate parseNavigationTemplate(ReadableMap map) {
+    
+    ActionStrip actionStrip =
+            new ActionStrip.Builder()
+                    .addAction(
+                            new Action.Builder()
+                                    .setTitle("BACK")
+                                    .build())
+                    .build();
+
+    return new NavigationTemplate.Builder().setActionStrip(actionStrip).build();
+  };
 
   private ListTemplate parseListTemplateChildren(ReadableMap map) {
     ReadableArray children = map.getArray("children");

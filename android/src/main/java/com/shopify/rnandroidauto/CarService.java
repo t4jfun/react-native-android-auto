@@ -32,6 +32,8 @@ import androidx.lifecycle.LifecycleObserver;
 public final class CarService extends CarAppService {
     private ReactInstanceManager mReactInstanceManager;
     private CarScreen screen;
+    @Nullable
+    SurfaceRenderer mNavigationCarSurface;
 
     public CarService() {
         // Exported services must have an empty public constructor.
@@ -66,7 +68,8 @@ public final class CarService extends CarAppService {
             @Override
             @NonNull
             public Screen onCreateScreen(@Nullable Intent intent) {
-                screen = new CarScreen(getCarContext(), mReactInstanceManager.getCurrentReactContext());
+                mNavigationCarSurface = new SurfaceRenderer(getCarContext(), getLifecycle());
+                screen = new CarScreen(getCarContext(), mReactInstanceManager.getCurrentReactContext(), mNavigationCarSurface);
                 screen.setMarker("root");
                 runJsApplication();
                 return screen;
