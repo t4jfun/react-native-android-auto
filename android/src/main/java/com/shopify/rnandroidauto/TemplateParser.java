@@ -241,15 +241,16 @@ public class TemplateParser {
 
   private NavigationTemplate parseNavigationTemplate(ReadableMap map) {
     
-    ActionStrip actionStrip =
-            new ActionStrip.Builder()
-                    .addAction(
-                            new Action.Builder()
-                                    .setTitle("BACK")
-                                    .build())
-                    .build();
+      NavigationTemplate.Builder builder = new NavigationTemplate.Builder();
 
-    return new NavigationTemplate.Builder().setActionStrip(actionStrip).build();
+      try {
+          ReadableMap actionStripMap = map.getMap("actionStrip");
+          builder.setActionStrip(parseActionStrip(actionStripMap));
+      } catch (NoSuchKeyException e) {
+          Log.d(TAG, "NavigationTemplate error " +  e);
+      }
+
+      return builder.build();
   };
 
   private ListTemplate parseListTemplateChildren(ReadableMap map) {
