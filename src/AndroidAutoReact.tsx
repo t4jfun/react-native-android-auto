@@ -94,7 +94,7 @@ export const Screen = React.memo(function Screen({
   name: string;
   render: ScreenContainer["render"];
 }) {
-  console.log("AndroidAudo: Screen rendering");
+  console.log("AndroidAuto: Screen rendering");
 
   const navigation = useCarNavigation();
   React.useEffect(() => {
@@ -114,7 +114,7 @@ export const ScreenManager = React.memo(function ScreenManager({
 }: {
   children: any;
 }) {
-  console.log("AndroidAudo: Screen Manager rendering");
+  console.log("AndroidAuto: Screen Manager rendering");
 
   const { stack } = useCarNavigation();
 

@@ -27,11 +27,12 @@ import androidx.car.app.model.SectionedItemList;
 import androidx.car.app.model.Row;
 import androidx.car.app.model.Template;
 import androidx.car.app.model.PlaceMarker;
+import androidx.car.app.navigation.model.NavigationTemplate;
 
 import java.util.ArrayList;
 
 public class TemplateParser {
-
+  static final String TAG = "ReactAuto";
   private ReactCarRenderContext mReactCarRenderContext;
 
   TemplateParser(ReactCarRenderContext reactCarRenderContext) {
