@@ -22,6 +22,7 @@ import androidx.car.app.CarToast;
 import androidx.car.app.ScreenManager;
 import androidx.car.app.model.Template;
 import java.util.WeakHashMap;
+import androidx.annotation.NonNull;
 
 @ReactModule(name = AndroidAutoModule.MODULE_NAME)
 public class AndroidAutoModule extends ReactContextBaseJavaModule {
