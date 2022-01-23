@@ -34,6 +34,9 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
   private CarScreen mCurrentCarScreen;
   private ScreenManager mScreenManager;
 
+  @NonNull
+  private SurfaceRenderer mSurfaceRenderer;
+
   private WeakHashMap<String, CarScreen> carScreens;
   private WeakHashMap<CarScreen, ReactCarRenderContext> reactCarRenderContextMap;
 
@@ -97,7 +100,7 @@ public class AndroidAutoModule extends ReactContextBaseJavaModule {
 
     Template template = parseTemplate(renderMap, reactCarRenderContext);
 
-    CarScreen screen = new CarScreen(mCarContext, mReactContext);
+    CarScreen screen = new CarScreen(mCarContext, mReactContext, mSurfaceRenderer);
     reactCarRenderContextMap.remove(screen);
     reactCarRenderContextMap.put(screen, reactCarRenderContext);
 
