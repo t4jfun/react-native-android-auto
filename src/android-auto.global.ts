@@ -13,6 +13,8 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
+      "navigation-template": NativeToJSXElement<"navigation-template">;
+      "route-preview-navigation-template": NativeToJSXElement<"route-preview-navigation-template">;
       "list-template": NativeToJSXElement<"list-template">;
       "item-list": NativeToJSXElement<"item-list">;
       "place-list-map-template": NativeToJSXElement<"place-list-map-template">;
