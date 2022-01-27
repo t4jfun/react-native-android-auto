@@ -10,17 +10,17 @@
 //   original location:
 //   - https://github.com/facebook/react-native/blob/0.58-stable/local-cli/templates/HelloWorld/android/app/build.gradle
 
-def DEFAULT_COMPILE_SDK_VERSION = 28
+def DEFAULT_COMPILE_SDK_VERSION = 31
 def DEFAULT_BUILD_TOOLS_VERSION = '28.0.3'
-def DEFAULT_MIN_SDK_VERSION = 23
-def DEFAULT_TARGET_SDK_VERSION = 28
+def DEFAULT_MIN_SDK_VERSION = 26
+def DEFAULT_TARGET_SDK_VERSION = 31
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
+//apply plugin: 'maven'
 
 buildscript {
     // The Android Gradle plugin is only required when opening the android folder stand-alone.
@@ -31,15 +31,31 @@ buildscript {
         repositories {
             google()
             jcenter()
+            maven {
+                url 'https://api.mapbox.com/downloads/v2/releases/maven'
+                authentication {
+                    basic(BasicAuthentication)
+                }
+                credentials {
+                    username = "mapbox"
+                    password = project.hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? project.property('MAPBOX_DOWNLOADS_TOKEN') : System.getenv('MAPBOX_DOWNLOADS_TOKEN')
+                }
+            }
         }
         dependencies {
-            classpath 'com.android.tools.build:gradle:3.4.1'
+            //classpath 'com.android.tools.build:gradle:3.4.1'
+            //classpath "com.mapbox.gradle.plugins:access-token:0.2.1"
+            classpath 'com.android.tools.build:gradle:7.0.3'
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
+            classpath "com.mapbox.gradle.plugins:access-token:0.2.1"
         }
     }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion safeExtGet('compileSdkVersion', DEFAULT_COMPILE_SDK_VERSION)
@@ -57,6 +73,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
 }
 
 repositories {
@@ -72,13 +91,33 @@ repositories {
     }
     google()
     jcenter()
+    maven {
+        url 'https://api.mapbox.com/downloads/v2/releases/maven'
+        authentication {
+            basic(BasicAuthentication)
+        }
+        credentials {
+            username = "mapbox"
+            password = project.hasProperty('MAPBOX_DOWNLOADS_TOKEN') ? project.property('MAPBOX_DOWNLOADS_TOKEN') : System.getenv('MAPBOX_DOWNLOADS_TOKEN')
+        }
+    }
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
-    implementation "androidx.car.app:app:1.1.0-beta01"
+    //implementation "androidx.car.app:app:1.1.0-beta01"
     implementation "androidx.activity:activity:1.0.0"
+    api("com.mapbox.navigation:android:2.1.1")
+    api("com.mapbox.search:mapbox-search-android:1.0.0-beta.23")
+    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.car.app:app:1.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.2")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
 }
 
 def configureReactNativePom(def pom) {
@@ -88,7 +127,8 @@ def configureReactNativePom(def pom) {
         name packageJson.title
         artifactId packageJson.name
         version = packageJson.version
-        group = "com.shopify.rnandroidauto"
+        //group = "com.shopify.rnandroidauto"
+        group = "com.mapbox.examples.androidauto"
         description packageJson.description
         url packageJson.repository.baseUrl
 
@@ -115,7 +155,7 @@ afterEvaluate { project ->
     task androidJavadoc(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += files(android.bootClasspath)
-        classpath += files(project.getConfigurations().getByName('compile').asList())
+        //classpath += files(project.getConfigurations().getByName('compile').asList())
         include '**/*.java'
     }
 
@@ -144,12 +184,12 @@ afterEvaluate { project ->
         archives androidJavadocJar
     }
 
-    task installArchives(type: Upload) {
-        configuration = configurations.archives
-        repositories.mavenDeployer {
-            // Deploy to react-native-event-bridge/maven, ready to publish to npm
-            repository url: "file://${projectDir}/../android/maven"
-            configureReactNativePom pom
-        }
-    }
+//    task installArchives(type: Upload) {
+//        configuration = configurations.archives
+//        repositories.mavenDeployer {
+//            // Deploy to react-native-event-bridge/maven, ready to publish to npm
+//            repository url: "file://${projectDir}/../android/maven"
+//            configureReactNativePom pom
+//        }
+//    }
 }
