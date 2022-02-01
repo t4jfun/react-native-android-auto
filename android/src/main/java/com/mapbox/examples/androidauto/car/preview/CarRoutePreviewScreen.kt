@@ -16,6 +16,7 @@ import com.mapbox.androidauto.MapboxCarApp
 import com.mapbox.androidauto.car.navigation.speedlimit.CarSpeedLimitRenderer
 import com.mapbox.androidauto.logAndroidAuto
 import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.R
 import com.mapbox.examples.androidauto.car.MainActionStrip
 import com.mapbox.examples.androidauto.car.location.CarLocationRenderer
@@ -31,7 +32,7 @@ class CarRoutePreviewScreen(
     private val routePreviewCarContext: RoutePreviewCarContext,
     private val placeRecord: PlaceRecord,
     private val directionsRoutes: List<DirectionsRoute>
-) : Screen(routePreviewCarContext.carContext) {
+) : BaseCarScreen(routePreviewCarContext.carContext) {
 
     var selectedIndex = 0
     val carRouteLine = CarRouteLine(routePreviewCarContext.mainCarContext)

@@ -14,6 +14,7 @@ import com.mapbox.androidauto.car.map.MapboxCarMapObserver
 import com.mapbox.androidauto.car.map.MapboxCarMapSurface
 import com.mapbox.androidauto.logAndroidAuto
 import com.mapbox.api.directions.v5.models.DirectionsRoute
+import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.R
 import com.mapbox.examples.androidauto.car.MainCarContext
 import com.mapbox.examples.androidauto.car.location.CarLocationRenderer
@@ -38,7 +39,7 @@ class PlacesListOnMapScreen(
     private val placesLayerUtil: PlacesListOnMapLayerUtil,
     private val placesListItemMapper: PlacesListItemMapper,
     private val searchCarContext: SearchCarContext
-) : Screen(mainCarContext.carContext) {
+) : BaseCarScreen(mainCarContext.carContext) {
 
     @VisibleForTesting
     var itemList = buildErrorItemList(R.string.car_search_no_results)

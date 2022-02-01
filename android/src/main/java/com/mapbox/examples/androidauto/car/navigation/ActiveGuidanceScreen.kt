@@ -16,6 +16,7 @@ import com.mapbox.androidauto.logAndroidAuto
 import com.mapbox.examples.androidauto.R
 import com.mapbox.examples.androidauto.car.location.CarLocationRenderer
 import com.mapbox.androidauto.car.navigation.speedlimit.CarSpeedLimitRenderer
+import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.car.MainMapActionStrip
 import com.mapbox.examples.androidauto.car.preview.CarRouteLine
 import com.mapbox.navigation.core.MapboxNavigationProvider
@@ -26,7 +27,7 @@ import com.mapbox.navigation.core.MapboxNavigationProvider
  */
 class ActiveGuidanceScreen(
     private val carActiveGuidanceContext: CarActiveGuidanceCarContext
-) : Screen(carActiveGuidanceContext.carContext) {
+) : BaseCarScreen(carActiveGuidanceContext.carContext) {
 
     val carRouteLine = CarRouteLine(carActiveGuidanceContext.mainCarContext)
     val carLocationRenderer = CarLocationRenderer(carActiveGuidanceContext.mainCarContext)

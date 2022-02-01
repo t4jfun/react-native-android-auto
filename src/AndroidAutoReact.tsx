@@ -20,6 +20,7 @@ export function RootView(props: {
 
   const push = React.useCallback(
     (routeName: string, params?: any) => {
+    console.log("push = React.useCallback(")
       setStack((prev) => {
         const screen = screens.current.find(({ name }) => name === routeName);
 
@@ -47,6 +48,7 @@ export function RootView(props: {
   );
 
   const pop = React.useCallback(() => {
+    console.log("pop = React.useCallback(()")
     setStack((prev) => {
       if (prev.length === 1) {
         return prev;
