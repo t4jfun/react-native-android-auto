@@ -11,6 +11,7 @@ const invalidate = debounce((screenName: string) => {
 const eventEmitter = new NativeEventEmitter();
 
 function prepareTemplate(name: string, template: AndroidAutoTemplate) {
+    console.log("prepareTemplate", name, template)
   let currentIndex = 0;
   const callbacks = new Map<number, Function>();
 
@@ -54,6 +55,7 @@ export const AndroidAutoModule = {
   }, 50),
   pushScreen: (name: string, template: AndroidAutoTemplate) => {
     NativeModules.CarModule.pushScreen(...prepareTemplate(name, template));
+    invalidate(name);
   },
   popScreen: () => {
     NativeModules.CarModule.popScreen();

@@ -8,7 +8,7 @@ package com.mapbox.androidauto
  *   The car's MainCarSession will update to show the ActiveGuidanceScreen
  */
 sealed class CarAppState
-object ReactScreen : CarAppState()
+object ReactScreenState : CarAppState()
 object FreeDriveState : CarAppState()
 object RoutePreviewState : CarAppState()
 object ActiveGuidanceState : CarAppState()

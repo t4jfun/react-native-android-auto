@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactContext
 import com.mapbox.androidauto.car.navigation.roadlabel.RoadLabelSurfaceLayer
 import com.mapbox.androidauto.car.navigation.speedlimit.CarSpeedLimitRenderer
 import com.mapbox.androidauto.logAndroidAuto
+import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.car.location.CarLocationRenderer
 import com.mapbox.examples.androidauto.car.navigation.CarCameraMode
 import com.mapbox.examples.androidauto.car.navigation.CarNavigationCamera
@@ -23,7 +24,7 @@ import com.mapbox.examples.androidauto.car.preview.CarRouteLine
  */
 class MainCarScreen(
     private val mainCarContext: MainCarContext,
-) : Screen(mainCarContext.carContext) {
+) : BaseCarScreen(mainCarContext.carContext) {
 
     val carRouteLine = CarRouteLine(mainCarContext)
     val carLocationRenderer = CarLocationRenderer(mainCarContext)
@@ -39,8 +40,6 @@ class MainCarScreen(
 
     private val mainActionStrip = MainActionStrip(mainCarContext)
     private val mapActionStripBuilder = MainMapActionStrip(this, carNavigationCamera)
-    private var mTemplate: Template? = null
-
 
     init {
         logAndroidAuto("MainCarScreen constructor")
@@ -65,12 +64,6 @@ class MainCarScreen(
                 mainCarContext.mapboxCarMap.unregisterObserver(carNavigationCamera)
             }
         })
-    }
-
-    fun setTemplate(template: Template) {
-        Log.d("ReactAUTO", "setTemplate $template $this");
-        mTemplate = template
-        //invalidate()
     }
 
     override fun onGetTemplate(): Template {
