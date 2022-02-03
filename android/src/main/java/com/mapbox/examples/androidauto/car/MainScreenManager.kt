@@ -38,9 +38,12 @@ class MainScreenManager(
         //if(mCurrentScreen != null) return mCurrentScreen as MainCarScreen
         val screen = when (carAppState) {
             FreeDriveState, RoutePreviewState -> MainCarScreen(mainCarContext)
-            ActiveGuidanceState, ArrivalState -> {
-                ActiveGuidanceScreen(CarActiveGuidanceCarContext(mainCarContext))
-            }
+//            ActiveGuidanceState, ArrivalState -> {
+//                ActiveGuidanceScreen(
+//                    CarActiveGuidanceCarContext(mainCarContext),
+//                    onBackPressedCallback
+//                )
+//            }
             else -> MainCarScreen(mainCarContext)
         }
         if(root) screen.marker = "root"
@@ -53,9 +56,12 @@ class MainScreenManager(
         //if(mCurrentScreen != null) return mCurrentScreen as MainCarScreen
         val screen = when (carAppState) {
             FreeDriveState, RoutePreviewState -> MainCarScreen(mainCarContext)
-            ActiveGuidanceState, ArrivalState -> {
-                ActiveGuidanceScreen(CarActiveGuidanceCarContext(mainCarContext))
-            }
+//            ActiveGuidanceState, ArrivalState -> {
+//                ActiveGuidanceScreen(
+//                    CarActiveGuidanceCarContext(mainCarContext),
+//                    onBackPressedCallback
+//                )
+//            }
             else -> MainCarScreen(mainCarContext)
         }
         if(root) screen.marker = "root"

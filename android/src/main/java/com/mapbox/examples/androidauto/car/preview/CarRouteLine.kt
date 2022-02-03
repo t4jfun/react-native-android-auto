@@ -1,5 +1,6 @@
 package com.mapbox.examples.androidauto.car.preview
 
+import android.graphics.Color
 import com.mapbox.androidauto.car.map.MapboxCarMapObserver
 import com.mapbox.androidauto.car.map.MapboxCarMapSurface
 import com.mapbox.androidauto.logAndroidAuto
@@ -29,8 +30,22 @@ class CarRouteLine(
     val mainCarContext: MainCarContext
 ) : MapboxCarMapObserver {
 
+
+    private val LINE_COLOR = "#EE2E23"
+    private val CASE_COLOR = "#FF771A15"
+    private val INACTIVE_LINE_COLOR = "#FFF69590"
+    private val TRAVELED_LINE_COLOR = "#FF9E9E9E"
+    private val TRAVELED_CASE_COLOR = "#FF777676"
+
     private val routeLineColorResources by lazy {
-        RouteLineColorResources.Builder().build()
+        RouteLineColorResources.Builder()
+            .routeDefaultColor(Color.parseColor(LINE_COLOR))
+            .routeCasingColor(Color.parseColor(CASE_COLOR))
+            .routeUnknownCongestionColor(Color.parseColor(LINE_COLOR))
+            .inActiveRouteLegsColor(Color.parseColor(INACTIVE_LINE_COLOR))
+            .routeLineTraveledColor(Color.parseColor(TRAVELED_LINE_COLOR))
+            .routeLineTraveledCasingColor(Color.parseColor(TRAVELED_CASE_COLOR))
+            .build()
     }
 
     private val routeLineResources: RouteLineResources by lazy {

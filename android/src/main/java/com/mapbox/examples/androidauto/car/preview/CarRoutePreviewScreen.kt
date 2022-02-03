@@ -1,5 +1,6 @@
 package com.mapbox.examples.androidauto.car.preview
 
+import android.graphics.Color
 import android.text.SpannableString
 import androidx.activity.OnBackPressedCallback
 import androidx.car.app.Screen
@@ -23,6 +24,14 @@ import com.mapbox.examples.androidauto.car.location.CarLocationRenderer
 import com.mapbox.examples.androidauto.car.navigation.CarCameraMode
 import com.mapbox.examples.androidauto.car.navigation.CarNavigationCamera
 import com.mapbox.examples.androidauto.car.search.PlaceRecord
+import com.mapbox.navigation.core.directions.session.RoutesObserver
+import com.mapbox.navigation.core.directions.session.RoutesUpdatedResult
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi
+import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView
+import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLine
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources
 
 /**
  * After a destination has been selected. This view previews the route and lets
@@ -42,6 +51,14 @@ class CarRoutePreviewScreen(
         routePreviewCarContext.mapboxNavigation,
         CarCameraMode.OVERVIEW
     )
+
+//        fun onRoutesChanged(routes: List<DirectionsRoute>) {
+//            // note: the first route in the list is considered the primary route
+//            val routeLines = routes.map { RouteLine(it, null) }
+//            routeLineApi.setRoutes(routeLines) { value ->
+//                routeLineView.renderRouteDrawData(mapStyle, value)
+//            }
+//        }
 
     private val backPressCallback = object : OnBackPressedCallback(true) {
 

@@ -37,7 +37,7 @@ interface CarRouteRequestCallback {
  */
 class CarRouteRequest(
     val mapboxNavigation: MapboxNavigation,
-    private val navigationLocationProvider: NavigationLocationProvider,
+    val navigationLocationProvider: NavigationLocationProvider,
 ) {
     internal var currentRequestId: Long? = null
 
@@ -88,10 +88,8 @@ class CarRouteRequest(
     fun request(placeRecord: PlaceRecord, callback: CarRouteRequestCallback) {
         Log.d("ReactAUTO", "Before route request");
         currentRequestId?.let { mapboxNavigation.cancelRouteRequest(it) }
-        Log.d("ReactAUTO", "After route request");
 
         val location = navigationLocationProvider.lastLocation
-        Log.d("ReactAUTO", "Location route request: $location");
 
         if (location == null) {
             logAndroidAutoFailure("CarRouteRequest.onUnknownCurrentLocation")

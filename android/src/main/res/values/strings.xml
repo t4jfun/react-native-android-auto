@@ -13,6 +13,13 @@
     <string name="car_action_preview_navigate_button" translatable="false">Continue to route</string>
 
     <string name="car_action_navigation_stop_button" translatable="false">Stop</string>
+    <string name="car_action_navigation_go_button" translatable="false">Go</string>
+
+    <string name="car_error_title" translatable="false">Location Error</string>
+    <string name="car_error_message" translatable="false">Event start location is too far</string>
+    <string name="car_off_route_title" translatable="false">Off Route Detected</string>
+    <string name="car_off_route_message" translatable="false">Please proceed the highlighted route</string>
+
 
     <string name="car_settings_title" translatable="false">Settings</string>
     <string name="car_settings_toggle_place_holder" translatable="false">Settings place holder</string>

@@ -53,7 +53,7 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
 
     private var hasLocationPermissions = false
     private var mainCarContext: MainCarContext? = null
-    private lateinit var mainScreenManager: MainScreenManager
+    //private lateinit var mainScreenManager: MainScreenManager
     private var mReactAndroidAutoModule: AndroidAutoModule? = null
     private lateinit var startScreen: BaseCarScreen
 
@@ -218,7 +218,7 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
                     null
                 }
             }
-        } ?: mReactAndroidAutoModule!!.getScreenByState(ReactScreenState)
+        } ?: mReactAndroidAutoModule!!.getCurrentScreen()
         carContext.getCarService(ScreenManager::class.java).push(currentScreen)
     }
 
