@@ -3,15 +3,23 @@ package com.mapbox.examples.androidauto
 import android.text.SpannableString
 import android.text.Spanned
 import android.util.Log
+import androidx.car.app.CarContext
 import androidx.car.app.model.*
 import androidx.car.app.navigation.model.NavigationTemplate
-import androidx.car.app.navigation.model.RoutePreviewNavigationTemplate
+import androidx.core.graphics.drawable.IconCompat
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableNativeMap
+import android.graphics.BitmapFactory
+
+import android.graphics.Bitmap
+
+
+
 
 class TemplateParser(
+    private val carContext: CarContext,
     private val mReactCarRenderContext: ReactCarRenderContext,
     private val mSetOnBackPressedCallback: (() -> Unit) -> Unit
 ) {
@@ -25,6 +33,7 @@ class TemplateParser(
         return when (type) {
             "navigation-template" -> parseNavigationTemplate(renderMap)
             "list-template" -> parseListTemplateChildren(renderMap)
+            "grid-template" -> parseGridTemplateChildren(renderMap)
             "place-list-map-template" -> parsePlaceListMapTemplate(renderMap)
             "pane-template" -> parsePaneTemplate(renderMap)
             else -> PaneTemplate.Builder(Pane.Builder().setLoading(true).build())
@@ -117,7 +126,7 @@ class TemplateParser(
                 val onPress = map.getInt("onPress")
                 if (title.lowercase() == "back") {
                     mSetOnBackPressedCallback {
-                        Log.d("ReactAUTO", "invokeCallback(onPress)",)
+                        Log.d("ReactAUTO", "invokeCallback(onPress)")
 
                         invokeCallback(onPress)
                     }
@@ -188,42 +197,6 @@ class TemplateParser(
         return builder.build()
     }
 
-    private fun parsePreviewMapTemplate(map: ReadableMap): RoutePreviewNavigationTemplate {
-        val builder = RoutePreviewNavigationTemplate.Builder()
-        builder.setTitle("RoutePreview Title")
-        val children = map.getArray("children")
-        try {
-            builder.setHeaderAction(getHeaderAction(map.getString("headerAction"))!!)
-        } catch (e: NoSuchKeyException) {
-        }
-        val loading: Boolean
-        loading = try {
-            map.getBoolean("isLoading")
-        } catch (e: NoSuchKeyException) {
-            children == null || children.size() == 0
-        }
-        Log.d("ReactAUTO", "Rendering " + if (loading) "Yes" else "No")
-        builder.setLoading(loading)
-        if (!loading) {
-            val itemListBuilder = ItemList.Builder()
-            for (i in 0 until children!!.size()) {
-                val child = children.getMap(i)
-                val type = child.getString("type")
-                Log.d("ReactAUTO", "Adding $type to row")
-                if (type == "row" || type == "place") {
-                    itemListBuilder.addItem(buildRow(child))
-                }
-            }
-            builder.setItemList(itemListBuilder.build())
-        }
-        try {
-            val actionStripMap = map.getMap("actionStrip")
-            builder.setActionStrip(parseActionStrip(actionStripMap)!!)
-        } catch (e: NoSuchKeyException) {
-        }
-        return builder.build()
-    }
-
     private fun parseNavigationTemplate(map: ReadableMap): NavigationTemplate {
         val builder = NavigationTemplate.Builder()
         try {
@@ -234,6 +207,87 @@ class TemplateParser(
                 TAG,
                 "NavigationTemplate error $e"
             )
+        }
+        return builder.build()
+    }
+
+    private fun parseGridTemplateChildren(map: ReadableMap): GridTemplate {
+        val children = map.getArray("children")
+        val builder = GridTemplate.Builder()
+        val loading: Boolean
+        loading = try {
+            map.getBoolean("isLoading")
+        } catch (e: NoSuchKeyException) {
+            children?.size() == 0
+        }
+        builder.setLoading(loading)
+        if (!loading) {
+            for (i in 0 until children?.size()!!) {
+                val child = children?.getMap(i)
+                val type = child?.getString("type")
+                if (type == "item-list") {
+                    builder.setSingleList(
+                        parseGridItemListChildren(child)
+                    )
+                }
+            }
+        }
+        try {
+            builder.setHeaderAction(getHeaderAction(map.getString("headerAction"))!!)
+        } catch (e: NoSuchKeyException) {
+        }
+        try {
+            val actionStripMap = map.getMap("actionStrip")
+            builder.setActionStrip(parseActionStrip(actionStripMap)!!)
+        } catch (e: Exception) {
+        }
+        builder.setTitle(map.getString("title")!!)
+        return builder.build()
+    }
+
+    private fun parseGridItemListChildren(itemList: ReadableMap?): ItemList {
+        val builder = ItemList.Builder()
+        if (itemList != null) {
+            val children = itemList.getArray("children")
+            for (i in 0 until children?.size()!!) {
+                val child = children?.getMap(i)
+                val type = child?.getString("type")
+                if (type == "row") {
+                    val gridItem = GridItem.Builder()
+                    val title = child.getString("title")
+                    if(title != null) gridItem.setTitle(title)
+                    val text = child.getString("texts")
+                    if(text != null) gridItem.setText(text)
+                    val icon = child.getString("icon")
+                    if(icon != null) {
+                        val bitmap =
+                            BitmapFactory.decodeResource(carContext.resources, carContext.resources.getIdentifier(icon, "drawable", carContext.packageName))
+                        gridItem.setImage(CarIcon.Builder(IconCompat.createWithBitmap(bitmap)).build())
+                    } else {
+                        // Set default icon - mandatory to have icon
+                        gridItem.setImage(
+                            CarIcon.APP_ICON
+                        )
+                    }
+
+                    val onPress = child.getInt("onPress")
+                    gridItem.setOnClickListener {
+                        invokeCallback(onPress)
+                    }
+
+                    builder.addItem(
+                        gridItem.build()
+                    )
+                }
+            }
+        }
+        try {
+            // TODO - figure out what this is for
+            // it currently throws a null error
+            // builder.setNoItemsMessage(itemList.getString("noItemsMessage"));
+            builder.setNoItemsMessage("No results")
+        } catch (e: NoSuchKeyException) {
+            Log.d("setNoItemsMessage", "error: $e")
         }
         return builder.build()
     }
@@ -269,7 +323,7 @@ class TemplateParser(
         try {
             val actionStripMap = map.getMap("actionStrip")
             builder.setActionStrip(parseActionStrip(actionStripMap)!!)
-        } catch (e: NoSuchKeyException) {
+        } catch (e: Exception) {
         }
         builder.setTitle(map.getString("title")!!)
         return builder.build()
