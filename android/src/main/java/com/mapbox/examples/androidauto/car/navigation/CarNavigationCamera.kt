@@ -189,6 +189,7 @@ class CarNavigationCamera(
         val mapSurface = mapboxCarMapSurface?.mapSurface
         val fromZoom = mapSurface?.getMapboxMap()?.cameraState?.zoom ?: return
         val toZoom = (fromZoom + delta).coerceIn(MIN_ZOOM_OUT, MAX_ZOOM_IN)
+        updateCameraMode(CarCameraMode.IDLE)
         mapSurface.camera.easeTo(cameraOptions { zoom(toZoom) })
     }
 

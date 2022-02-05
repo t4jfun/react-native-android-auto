@@ -64,8 +64,8 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
         startScreen = BaseCarScreen(carContext)
         startScreen.marker = "root"
 
-        val logoSurfaceRenderer = CarLogoSurfaceRenderer()
-        val compassSurfaceRenderer = CarCompassSurfaceRenderer()
+        //val logoSurfaceRenderer = CarLogoSurfaceRenderer()
+        //val compassSurfaceRenderer = CarCompassSurfaceRenderer()
         lifecycle.addObserver(object : DefaultLifecycleObserver {
 
             override fun onCreate(owner: LifecycleOwner) {
@@ -86,14 +86,14 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
 
             override fun onResume(owner: LifecycleOwner) {
                 logAndroidAuto("MainCarSession onResume")
-                mapboxCarMap.registerObserver(logoSurfaceRenderer)
-                mapboxCarMap.registerObserver(compassSurfaceRenderer)
+                //mapboxCarMap.registerObserver(logoSurfaceRenderer)
+                //mapboxCarMap.registerObserver(compassSurfaceRenderer)
             }
 
             override fun onPause(owner: LifecycleOwner) {
                 logAndroidAuto("MainCarSession onPause")
-                mapboxCarMap.unregisterObserver(logoSurfaceRenderer)
-                mapboxCarMap.unregisterObserver(compassSurfaceRenderer)
+                //mapboxCarMap.unregisterObserver(logoSurfaceRenderer)
+                //mapboxCarMap.unregisterObserver(compassSurfaceRenderer)
             }
 
             override fun onStop(owner: LifecycleOwner) {
