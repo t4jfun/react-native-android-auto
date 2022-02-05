@@ -266,11 +266,17 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                                 Log.d("ReactAUTO", "onRoutesReady --- : $routes");
 
                                 val carActiveGuidanceCarContext = CarActiveGuidanceCarContext(mCarContext!!)
+                                val showNotification = try {
+                                    renderMap.getBoolean("notification")
+                                } catch (e: NoSuchKeyException) {
+                                    false
+                                }
 
                                 screen = ActiveGuidanceScreen(
                                     carActiveGuidanceCarContext,
                                     routes,
-                                    onBackPressedCallback
+                                    onBackPressedCallback,
+                                    showNotification
                                 )
 
                                 //(screen as ActiveGuidanceScreen).cameraToOverview()

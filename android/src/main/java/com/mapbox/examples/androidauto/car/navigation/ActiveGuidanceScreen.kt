@@ -9,8 +9,7 @@ import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.car.app.notification.CarNotificationManager
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.*
 import com.mapbox.androidauto.FreeDriveState
 import com.mapbox.androidauto.MapboxCarApp
 import com.mapbox.androidauto.navigation.audioguidance.CarAudioGuidanceUi
@@ -30,6 +29,9 @@ import com.mapbox.navigation.core.reroute.RerouteState
 import com.mapbox.navigation.core.trip.session.OffRouteObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 /**
  * After a route has been selected. This view gives turn-by-turn instructions
@@ -38,7 +40,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class ActiveGuidanceScreen(
     private val carActiveGuidanceContext: CarActiveGuidanceCarContext,
     private val directionsRoutes: List<DirectionsRoute>?,
-    private val onBackPressedCallback: () -> Unit
+    private val onBackPressedCallback: () -> Unit,
+    private val showNotificationDebugButton: Boolean? = false
 ) : BaseCarScreen(carActiveGuidanceContext.carContext) {
 
     val carRouteLine = CarRouteLine(carActiveGuidanceContext.mainCarContext)
@@ -93,6 +96,15 @@ class ActiveGuidanceScreen(
         logAndroidAuto("ActiveGuidanceScreen constructor")
         carActiveGuidanceContext.mapboxNavigation.setRerouteController(null)
         // do something when the reroute state changes
+        lifecycle.coroutineScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                MapboxCarApp.carAppServices.audioGuidance().stateFlow()
+//                    .distinctUntilChanged { old, new ->
+//                        old.isMuted != new.isMuted || old.isPlayable != new.isPlayable
+//                    }
+                    .collect { this@ActiveGuidanceScreen.invalidate() }
+            }
+        }
 
         lifecycle.addObserver(object : DefaultLifecycleObserver {
 
@@ -182,29 +194,40 @@ class ActiveGuidanceScreen(
                 }
             }, 1000)
         }
+        val actionStrip = ActionStrip.Builder()
+        if(showNotificationDebugButton == true) actionStrip.addAction(
+            // Example button for notification test
+            Action.Builder()
+                .setIcon(CarIcon.ALERT)
+                .setOnClickListener {
+                    sendNotification(
+                        carContext.getString(R.string.car_off_route_title),
+                        carContext.getString(R.string.car_off_route_message)
+                    )
+                }
+                .build()
+        )
+        actionStrip.addAction(
+            // Example button for notification test
+            Action.Builder()
+                .setIcon(CarIcon.BACK)
+                .setOnClickListener {
+                    stopNavigation()
+                    _started.value = false
+                    onBackPressedCallback()
+                }
+                .build()
+        )
+        .addAction(
+            buildMainButtonAction()
+        )
+        .addAction(
+            carAudioGuidanceUi.buildSoundButtonAction()
+        )
         val builder = NavigationTemplate.Builder()
             .setBackgroundColor(CarColor.PRIMARY)
             .setActionStrip(
-                ActionStrip.Builder()
-                    .addAction(
-                        // Example button for notification test
-                        Action.Builder()
-                            .setIcon(CarIcon.ALERT)
-                            .setOnClickListener {
-                                sendNotification(
-                                    carContext.getString(R.string.car_off_route_title),
-                                    carContext.getString(R.string.car_off_route_message)
-                                )
-                            }
-                            .build()
-                    )
-                    .addAction(
-                        buildMainButtonAction()
-                    )
-                    .addAction(
-                        carAudioGuidanceUi.buildSoundButtonAction()
-                    )
-                    .build()
+                actionStrip.build()
             )
             .setMapActionStrip(mapActionStripBuilder.build())
 
