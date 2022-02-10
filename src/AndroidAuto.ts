@@ -63,4 +63,7 @@ export const AndroidAutoModule = {
   toast: (text: string, duration = 1) => {
     NativeModules.CarModule.toast(text, duration);
   },
+  getState: () => {
+    NativeModules.CarModule.getState();
+  },
 };

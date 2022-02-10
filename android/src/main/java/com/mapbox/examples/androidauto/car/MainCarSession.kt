@@ -23,9 +23,6 @@ import com.facebook.react.modules.appregistry.AppRegistry
 import com.facebook.react.modules.core.TimingModule
 import com.mapbox.androidauto.MapboxCarApp
 import com.mapbox.androidauto.MapboxCarApp.mapboxCarMap
-import com.mapbox.androidauto.ReactScreenState
-import com.mapbox.androidauto.car.map.widgets.compass.CarCompassSurfaceRenderer
-import com.mapbox.androidauto.car.map.widgets.logo.CarLogoSurfaceRenderer
 import com.mapbox.androidauto.deeplink.GeoDeeplinkNavigateAction
 import com.mapbox.androidauto.logAndroidAuto
 import com.mapbox.examples.androidauto.AndroidAutoModule
@@ -33,12 +30,6 @@ import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.car.permissions.NeedsLocationPermissionsScreen
 import com.mapbox.navigation.base.ExperimentalPreviewMapboxNavigationAPI
 import com.mapbox.navigation.core.trip.session.TripSessionState
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import okhttp3.internal.wait
-import kotlin.properties.Delegates
 
 class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : Session() {
 
@@ -52,6 +43,7 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
         }
 
     private var hasLocationPermissions = false
+    private var onCreateScreenCalled = false
     private var mainCarContext: MainCarContext? = null
     //private lateinit var mainScreenManager: MainScreenManager
     private var mReactAndroidAutoModule: AndroidAutoModule? = null
@@ -78,6 +70,8 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
             override fun onStart(owner: LifecycleOwner) {
                 hasLocationPermissions = hasLocationPermission()
                 logAndroidAuto("MainCarSession onStart and hasLocationPermissions $hasLocationPermissions")
+                logAndroidAuto("android_auto:connect ------")
+                mReactAndroidAutoModule?.connect()
                 if (hasLocationPermissions) {
                     startTripSession(mainCarContext!!)
                     //lifecycle.addObserver(mReactAndroidAutoModule!!)
@@ -99,6 +93,8 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
             override fun onStop(owner: LifecycleOwner) {
                 logAndroidAuto("MainCarSession onStop")
                 //lifecycle.removeObserver(mReactAndroidAutoModule!!)
+                logAndroidAuto("android_auto:disconnect ------")
+                mReactAndroidAutoModule?.disconnect()
             }
 
             override fun onDestroy(owner: LifecycleOwner) {
@@ -130,6 +126,8 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
 
 
         logAndroidAuto(mReactAndroidAutoModule.toString())
+
+        onCreateScreenCalled = true
 
         return when (hasLocationPermissions) {
             false -> NeedsLocationPermissionsScreen(carContext)
@@ -177,6 +175,7 @@ class MainCarSession(private var mReactInstanceManager: ReactInstanceManager) : 
             val timingModule = reactContext.getNativeModule(TimingModule::class.java)
             mReactAndroidAutoModule = mReactInstanceManager.currentReactContext?.getNativeModule(AndroidAutoModule::class.java)!!
             mReactAndroidAutoModule?.setCarContext(mainCarContext!!, startScreen)
+            if(onCreateScreenCalled) mReactAndroidAutoModule?.connect()
             timingModule?.onHostResume()
         } finally {
         }

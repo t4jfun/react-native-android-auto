@@ -49,6 +49,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
     private var mMainCarScreen: MainCarScreen? = null
     private var mActiveGuidanceScreen: ActiveGuidanceScreen? = null
     private var mReactScreen: BaseCarScreen? = null
+    private var mStateConnected: Boolean = false
     private var currentRequestId: Long? = null
 
     private var carScreens: WeakHashMap<String, BaseCarScreen>
@@ -367,6 +368,15 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
         reactCarRenderContext.eventCallback = callback
     }
 
+    @ReactMethod
+    fun getState(){
+        if(mStateConnected){
+            sendEvent("android_auto:connect")
+        } else {
+            sendEvent("android_auto:disconnect")
+        }
+    }
+
     fun setCarContext(carContext: MainCarContext, startScreen: BaseCarScreen) {
         mCarContext = carContext
         mCurrentCarScreen = startScreen
@@ -406,10 +416,20 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
         carScreens.values.remove(screen)
     }
 
-    private fun sendEvent(eventName: String, params: Any) {
+    fun sendEvent(eventName: String, params: Any = WritableNativeMap()) {
         mReactContext
             .getJSModule(RCTDeviceEventEmitter::class.java)
             .emit(eventName, params)
+    }
+
+    fun connect(){
+        mStateConnected = true
+        getState()
+    }
+
+    fun disconnect(){
+        mStateConnected = false
+        getState()
     }
 
 
