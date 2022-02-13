@@ -91,9 +91,7 @@ object MapboxCarApp {
                 MapboxCarInitializer through the MapboxCarApp.setup function
             """.trimIndent()
         }
-        logAndroidAuto("setupCar 2")
         val carLifecycle = session.lifecycle
-        logAndroidAuto("setupCar 3")
         carLifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onCreate(owner: LifecycleOwner) {
                 logAndroidAuto("MapboxCarApp setupCar onCreate")

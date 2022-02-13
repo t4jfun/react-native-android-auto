@@ -22,7 +22,7 @@ class MainMapActionStrip(
     fun build(): ActionStrip {
         val mapActionStripBuilder = ActionStrip.Builder()
             .addAction(buildPanAction())
-        if (carNavigationCamera.customCameraMode.value != null) {
+        if (carNavigationCamera.customCameraMode.value != null && carNavigationCamera.customCameraMode.value != CarCameraMode.FOLLOWING) {
             mapActionStripBuilder.addAction(
                 buildRecenterAction(carNavigationCamera)
             )
