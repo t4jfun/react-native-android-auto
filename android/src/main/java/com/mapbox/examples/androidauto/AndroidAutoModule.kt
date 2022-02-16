@@ -98,23 +98,25 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                 mMainCarScreen!!
 
             }
-            ActiveGuidanceState, ArrivalState -> {
-                if(new || mActiveGuidanceScreen == null){
-                    mActiveGuidanceScreen = ActiveGuidanceScreen(
-                        CarActiveGuidanceCarContext(mCarContext!!),
-                        null,
-                        onBackPressedCallback
-                    )
-                }
-                mActiveGuidanceScreen!!
-
-            }
+//            ActiveGuidanceState, ArrivalState -> {
+//                if(new || mActiveGuidanceScreen == null){
+//                    mActiveGuidanceScreen = ActiveGuidanceScreen(
+//                        CarActiveGuidanceCarContext(mCarContext!!),
+//                        null,
+//                        onBackPressedCallback,
+//                        waypointPoints = waypointPoints
+//                    )
+//                }
+//                mActiveGuidanceScreen!!
+//
+//            }
             ReactScreenState -> {
                 if(new || mReactScreen == null){
                     mReactScreen = BaseCarScreen(mCarContext!!.carContext)
                 }
                 mReactScreen!!
             }
+            else -> mMainCarScreen!!
         }
         //mCurrentCarScreen = screen
         if(root) screen.marker = "root"
@@ -204,7 +206,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
 
             } else {
                 // else if endswith screen:
-                val waypointPoints = mutableListOf<Point>()
+                var waypointPoints = mutableListOf<Point>()
                 Log.d("ReactAUTO", "----------------------")
                 val waypoints = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getArray("waypoints")
                 for (i in 0 until waypoints?.size()!!) {
@@ -220,17 +222,22 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                         )
                     )
                 }
-                val fakeWaypoints = listOf(
-                    Point.fromLngLat(18.970608, 47.522207),
-                    Point.fromLngLat(18.972462, 47.520275),
-                    Point.fromLngLat(18.974289, 47.518817),
-                    Point.fromLngLat(18.970734, 47.517787)
-                )
+
                 Log.d("ReactAUTO", "Points: $waypointPoints")
                 Log.d("ReactAUTO", "----------------------")
                 val searchCarContext = SearchCarContext(mCarContext!!)
                 // TODO: check distance to start point
                 val location = MapboxCarApp.carAppServices.location().navigationLocationProvider.lastLocation
+                val useFakePoints = false
+                if(useFakePoints){
+                    waypointPoints = listOf(
+                        Point.fromLngLat(location!!.longitude, location.latitude),
+                        Point.fromLngLat(18.970608, 47.522207),
+                        Point.fromLngLat(18.972462, 47.520275),
+                        Point.fromLngLat(18.974289, 47.518817),
+                        Point.fromLngLat(18.970734, 47.517787)
+                    ) as MutableList<Point>
+                }
                 val maxDistanceAllowedInKm = 0.402336
                 if(
                     location == null ||
@@ -257,6 +264,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                             .applyDefaultNavigationOptions()
                             .profile(DirectionsCriteria.PROFILE_DRIVING)
                             .coordinatesList(waypointPoints)
+                            .waypointIndicesList(listOf(0, waypointPoints.size-1))
                             .build(),
                         routesRequestCallback = object : RouterCallback {
 
@@ -277,10 +285,10 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                                     carActiveGuidanceCarContext,
                                     routes,
                                     onBackPressedCallback,
-                                    showNotification
+                                    showNotification,
+                                    waypointPoints
                                 )
 
-                                //(screen as ActiveGuidanceScreen).cameraToOverview()
 
                                 reactCarRenderContextMap.remove(screen)
                                 reactCarRenderContextMap[screen] = reactCarRenderContext
@@ -291,9 +299,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                                 Log.i("ReactAUTO", "pushScreen $screen")
                                 mScreenManager!!.push(screen!!)
                                 carActiveGuidanceCarContext.mapboxNavigation.setRoutes(routes)
-
                             }
-
 
                             override fun onCanceled(
                                 routeOptions: RouteOptions,

@@ -108,8 +108,9 @@ dependencies {
     implementation 'com.facebook.react:react-native:+'  // From node_modules
     //implementation "androidx.car.app:app:1.1.0-beta01"
     implementation "androidx.activity:activity:1.0.0"
-    api("com.mapbox.navigation:android:2.1.1")
-    api("com.mapbox.search:mapbox-search-android:1.0.0-beta.23")
+    //implementation 'com.mapbox.maps:android:10.3.0'
+    api("com.mapbox.navigation:android:2.2.0")
+    api("com.mapbox.search:mapbox-search-android:1.0.0-beta.24")
     implementation("androidx.appcompat:appcompat:1.4.0")
     implementation("androidx.car.app:app:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
