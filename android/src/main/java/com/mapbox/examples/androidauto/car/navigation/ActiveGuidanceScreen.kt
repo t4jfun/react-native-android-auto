@@ -1,9 +1,9 @@
 package com.mapbox.examples.androidauto.car.navigation
 
 import android.app.NotificationManager
-import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.car.app.model.*
 import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.car.app.notification.CarNotificationManager
@@ -23,14 +23,19 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.car.MainMapActionStrip
 import com.mapbox.examples.androidauto.car.preview.CarRouteLine
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.style.layers.addLayerBelow
+import com.mapbox.maps.plugin.annotation.AnnotationConfig
+import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
+import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
+import com.mapbox.maps.plugin.locationcomponent.LocationComponentConstants
 import com.mapbox.navigation.core.MapboxNavigationProvider
-import com.mapbox.navigation.core.reroute.RerouteController
-import com.mapbox.navigation.core.reroute.RerouteState
 import com.mapbox.navigation.core.trip.session.OffRouteObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
@@ -41,7 +46,8 @@ class ActiveGuidanceScreen(
     private val carActiveGuidanceContext: CarActiveGuidanceCarContext,
     private val directionsRoutes: List<DirectionsRoute>?,
     private val onBackPressedCallback: () -> Unit,
-    private val showNotificationDebugButton: Boolean? = false
+    private val showNotificationDebugButton: Boolean? = false,
+    private val waypointPoints: MutableList<Point>
 ) : BaseCarScreen(carActiveGuidanceContext.carContext) {
 
     val carRouteLine = CarRouteLine(carActiveGuidanceContext.mainCarContext)
@@ -72,6 +78,7 @@ class ActiveGuidanceScreen(
     private val mImportance = NotificationManager.IMPORTANCE_HIGH
     private val mSetOngoing = false
     private var mNotificationCount = 0
+    private var mLastOffRouteWarning : Long = 0
 
     var overviewed = false
     val _started = MutableStateFlow(false)
@@ -121,6 +128,43 @@ class ActiveGuidanceScreen(
                         invalidate()
                     }
                 }
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    val mapView = carActiveGuidanceContext.mapboxCarMap.mapboxCarMapSurface?.mapSurface
+                    val annotationApi = mapView?.annotations
+                    val annotationConfig = AnnotationConfig(
+                        belowLayerId = LocationComponentConstants.LOCATION_INDICATOR_LAYER
+                    )
+                    val circleAnnotationManager = annotationApi?.createCircleAnnotationManager(annotationConfig)
+                    Log.d("ReactAUTO", "circleAnnotationManager $circleAnnotationManager")
+                    var index = 0
+                    waypointPoints.forEach {
+                        if(index > 0 && index != waypointPoints.size -1){
+                            val circleAnnotationOptions: CircleAnnotationOptions = CircleAnnotationOptions()
+                                // Define a geographic coordinate.
+                                .withPoint(it)
+                                // Style the circle that will be added to the map.
+                                .withCircleRadius(10.0)
+                                .withCircleColor("#ffffff")
+                                .withCircleStrokeWidth(2.0)
+                                .withCircleStrokeColor("#b61827")
+                            circleAnnotationManager?.create(circleAnnotationOptions)
+                        } else if(index == waypointPoints.size -1){
+                            val circleAnnotationOptions: CircleAnnotationOptions = CircleAnnotationOptions()
+                                // Define a geographic coordinate.
+                                .withPoint(it)
+                                // Style the circle that will be added to the map.
+                                .withCircleRadius(10.0)
+                                .withCircleColor("#b61827")
+                                .withCircleStrokeWidth(2.0)
+                                .withCircleStrokeColor("#ffffff")
+                            circleAnnotationManager?.create(circleAnnotationOptions)
+                        }
+                        index += 1
+                    }
+
+                }, 1000)
+
             }
 
             override fun onPause(owner: LifecycleOwner) {
