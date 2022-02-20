@@ -209,6 +209,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                 var waypointPoints = mutableListOf<Point>()
                 Log.d("ReactAUTO", "----------------------")
                 val waypoints = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getArray("waypoints")
+                val destination = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getString("destination")
                 for (i in 0 until waypoints?.size()!!) {
                     val waypoint = waypoints?.getMap(i)
                     val data = waypoint?.getMap("data")
@@ -265,6 +266,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                             .profile(DirectionsCriteria.PROFILE_DRIVING)
                             .coordinatesList(waypointPoints)
                             .waypointIndicesList(listOf(0, waypointPoints.size-1))
+                            .waypointNamesList(listOf("", destination))
                             .build(),
                         routesRequestCallback = object : RouterCallback {
 
