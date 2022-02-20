@@ -3,6 +3,7 @@ package com.mapbox.examples.androidauto.car.navigation
 import android.app.NotificationManager
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import androidx.car.app.model.*
 import androidx.car.app.navigation.model.NavigationTemplate
@@ -31,12 +32,19 @@ import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentConstants
+import com.mapbox.navigation.base.trip.model.RouteLegProgress
+import com.mapbox.navigation.base.trip.model.RouteProgress
 import com.mapbox.navigation.core.MapboxNavigationProvider
+import com.mapbox.navigation.core.arrival.ArrivalObserver
+import com.mapbox.navigation.core.trip.session.LegIndexUpdatedCallback
 import com.mapbox.navigation.core.trip.session.OffRouteObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.*
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.schedule
 
 /**
  * After a route has been selected. This view gives turn-by-turn instructions
@@ -78,7 +86,11 @@ class ActiveGuidanceScreen(
     private val mImportance = NotificationManager.IMPORTANCE_HIGH
     private val mSetOngoing = false
     private var mNotificationCount = 0
-    private var mLastOffRouteWarning : Long = 0
+
+    private val OFF_ROUTE_TIMEOUT = 30_000L  // 30s
+    private var mOffRouteState : Boolean = false
+    private var mOffRouteTime : Long? = null
+    private var mOffRouteTimer : TimerTask? = null
 
     var overviewed = false
     val _started = MutableStateFlow(false)
@@ -91,17 +103,54 @@ class ActiveGuidanceScreen(
         override fun onOffRouteStateChanged(offRoute: Boolean) {
             logAndroidAuto("onOffRouteStateChanged $offRoute")
             if (offRoute){
-                sendNotification(
-                    carContext.getString(R.string.car_off_route_title),
-                    carContext.getString(R.string.car_off_route_message)
-                )
+                mOffRouteState = true
+                mOffRouteTime = SystemClock.elapsedRealtimeNanos()
+                mOffRouteTimer?.cancel()
+                mOffRouteTimer = Timer("OffRoute", false).schedule(OFF_ROUTE_TIMEOUT) {
+                    if(SystemClock.elapsedRealtimeNanos() - (mOffRouteTime ?: 0L) >= TimeUnit.MILLISECONDS.toNanos(OFF_ROUTE_TIMEOUT)){
+                        sendNotification(
+                            carContext.getString(R.string.car_off_route_title),
+                            carContext.getString(R.string.car_off_route_message)
+                        )
+                    }
+                }
+            } else {
+                mOffRouteState = false
+                mOffRouteTimer?.cancel()
+                val carNotificationManager = CarNotificationManager.from(carContext)
+                carNotificationManager.cancel(NOTIFICATION_ID)
             }
+        }
+    }
+
+    private val legIndexUpdatedCallback = object : LegIndexUpdatedCallback {
+        override fun onLegIndexUpdatedCallback(updated: Boolean) {
+            logAndroidAuto("onLegIndexUpdatedCallback $updated")
+        }
+
+    }
+
+    private val arrivalObserver = object : ArrivalObserver {
+        override fun onFinalDestinationArrival(routeProgress: RouteProgress) {
+            logAndroidAuto("--- onFinalDestinationArrival ---")
+        }
+
+        override fun onNextRouteLegStart(routeLegProgress: RouteLegProgress) {
+            logAndroidAuto("--- onNextRouteLegStart ---")
+            carActiveGuidanceContext.mapboxNavigation.navigateNextRouteLeg(legIndexUpdatedCallback)
+        }
+
+        override fun onWaypointArrival(routeProgress: RouteProgress) {
+            logAndroidAuto("onWaypointArrival")
         }
     }
 
     init {
         logAndroidAuto("ActiveGuidanceScreen constructor")
         carActiveGuidanceContext.mapboxNavigation.setRerouteController(null)
+        val arrivalController = CustomArrivalController()
+        carActiveGuidanceContext.mapboxNavigation.setArrivalController(arrivalController)
+
         // do something when the reroute state changes
         lifecycle.coroutineScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -128,6 +177,7 @@ class ActiveGuidanceScreen(
                         invalidate()
                     }
                 }
+                carActiveGuidanceContext.mapboxNavigation.registerArrivalObserver(arrivalObserver)
 
                 Handler(Looper.getMainLooper()).postDelayed({
                     val mapView = carActiveGuidanceContext.mapboxCarMap.mapboxCarMapSurface?.mapSurface
@@ -176,7 +226,7 @@ class ActiveGuidanceScreen(
                 carActiveGuidanceContext.mapboxCarMap.unregisterObserver(carRouteLine)
                 carRouteProgressObserver.stop()
                 carActiveGuidanceContext.mapboxNavigation.unregisterOffRouteObserver(offRouteObserver)
-
+                carActiveGuidanceContext.mapboxNavigation.unregisterArrivalObserver(arrivalObserver)
             }
         })
     }
@@ -224,7 +274,7 @@ class ActiveGuidanceScreen(
     }
 
     override fun onGetTemplate(): Template {
-        logAndroidAuto("ActiveGuidanceScreen onGetTemplate")
+        //logAndroidAuto("ActiveGuidanceScreen onGetTemplate")
         carActiveGuidanceContext.mapboxNavigation.setRoutes(directionsRoutes!!)
         if (!started.value && !overviewed) {
             Handler(Looper.getMainLooper()).postDelayed({
