@@ -15,7 +15,8 @@ import com.mapbox.navigation.ui.maneuver.model.ManeuverError
  * Attach the [start] [stop] functions to start observing navigation info.
  */
 class CarNavigationInfoObserver(
-    private val carActiveGuidanceCarContext: CarActiveGuidanceCarContext
+    private val carActiveGuidanceCarContext: CarActiveGuidanceCarContext,
+    private val waypoints: MutableList<androidx.car.app.navigation.model.Maneuver>
 ) {
     private var onNavigationInfoChanged: (() -> Unit)? = null
     var navigationInfo: NavigationTemplate.NavigationInfo? = null
@@ -38,8 +39,14 @@ class CarNavigationInfoObserver(
     }
 
     private fun updateNavigationInfo() {
+        logAndroidAuto("Expected maneuvers: $expectedManeuvers")
+        //expectedManeuvers?.value?.get()
+        // TODO: find nearest in waypoints with a limit distance, if the target is too far, use the default maneuver with override
+        expectedManeuvers?.value?.forEach {
+
+        }
         this.navigationInfo = carActiveGuidanceCarContext.navigationInfoMapper
-            .mapNavigationInfo(expectedManeuvers, routeProgress)
+            .mapNavigationInfo(expectedManeuvers, routeProgress, listOf<String>())
 
         this.travelEstimateInfo = carActiveGuidanceCarContext.tripProgressMapper.from(routeProgress)
     }

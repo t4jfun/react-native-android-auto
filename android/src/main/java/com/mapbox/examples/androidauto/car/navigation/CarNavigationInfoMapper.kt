@@ -26,7 +26,8 @@ class CarNavigationInfoMapper(
 
     fun mapNavigationInfo(
         expectedManeuvers: Expected<ManeuverError, List<Maneuver>>?,
-        routeProgress: RouteProgress?
+        routeProgress: RouteProgress?,
+        textOverrides: List<String>
     ): NavigationTemplate.NavigationInfo? {
         val currentStepProgress = routeProgress?.currentLegProgress?.currentStepProgress
         val distanceRemaining = currentStepProgress?.distanceRemaining ?: return null
@@ -38,30 +39,32 @@ class CarNavigationInfoMapper(
             carManeuverIconRenderer.renderManeuverIcon(primaryManeuver)?.let {
                 carManeuver.setIcon(it)
             }
-            val step = Step.Builder(primaryManeuver.text)
+            val text = if(textOverrides.size > 0) textOverrides[0] else primaryManeuver.text
+            val step = Step.Builder(text)
                 .setManeuver(carManeuver.build())
                 .useMapboxLaneGuidance(carLanesImageGenerator, maneuver.laneGuidance)
                 .build()
 
+            val secondText = if(textOverrides.size > 1) textOverrides[1] else null
             val stepDistance = carDistanceFormatter.carDistance(distanceRemaining.toDouble())
             RoutingInfo.Builder()
                 .setCurrentStep(step, stepDistance)
-                .withOptionalNextStep(expectedManeuvers.value)
+                .withOptionalNextStep(expectedManeuvers.value, secondText)
                 .build()
         } else {
             null
         }
     }
 
-    private fun RoutingInfo.Builder.withOptionalNextStep(maneuvers: List<Maneuver>?) = apply {
+    private fun RoutingInfo.Builder.withOptionalNextStep(maneuvers: List<Maneuver>?, textOverride: String? = null) = apply {
         maneuvers?.getOrNull(1)?.primary?.let { nextPrimaryManeuver ->
             val nextCarManeuver = carManeuverMapper.from(
                 nextPrimaryManeuver.type,
                 nextPrimaryManeuver.modifier,
                 nextPrimaryManeuver.degrees
             )
-            val nextStep = Step.Builder(nextPrimaryManeuver.text)
-                .setManeuver(nextCarManeuver.build())
+            val nextStepBuilder = if(textOverride != null) Step.Builder(textOverride) else Step.Builder(nextPrimaryManeuver.text)
+            val nextStep = nextStepBuilder.setManeuver(nextCarManeuver.build())
                 .build()
             setNextStep(nextStep)
         }
