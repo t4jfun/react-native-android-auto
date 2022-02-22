@@ -27,7 +27,7 @@ class CarLocationsOverviewCamera(
         private set
     internal lateinit var navigationCamera: NavigationCamera
         private set
-    internal lateinit var viewportDataSource: MapboxNavigationViewportDataSource
+    internal lateinit var viewportDataSource: CustomNavigationViewportDataSouce
         private set
     internal var isLocationInitialized = false
         private set
@@ -64,7 +64,7 @@ class CarLocationsOverviewCamera(
         val mapboxMap = mapboxCarMapSurface.mapSurface.getMapboxMap().also {
             it.setCamera(initialCameraOptions)
         }
-        viewportDataSource = MapboxNavigationViewportDataSource(
+        viewportDataSource = CustomNavigationViewportDataSouce(
             mapboxCarMapSurface.mapSurface.getMapboxMap()
         )
         navigationCamera = NavigationCamera(

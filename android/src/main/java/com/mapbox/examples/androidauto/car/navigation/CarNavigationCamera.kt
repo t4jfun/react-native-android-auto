@@ -31,12 +31,13 @@ class CarNavigationCamera(
     private val mapboxNavigation: MapboxNavigation,
     private val initialCarCameraMode: CarCameraMode,
     private val initialCameraOptions: CameraOptions? = CameraOptions.Builder()
+        .bearing(0.0)
         .zoom(DEFAULT_INITIAL_ZOOM)
         .build()
 ) : MapboxCarMapObserver {
     private var mapboxCarMapSurface: MapboxCarMapSurface? = null
     private lateinit var navigationCamera: NavigationCamera
-    private lateinit var viewportDataSource: MapboxNavigationViewportDataSource
+    private lateinit var viewportDataSource: CustomNavigationViewportDataSouce
 
     private val _carCameraMode = MutableLiveData<CarCameraMode?>(null)
     val customCameraMode: LiveData<CarCameraMode?> = _carCameraMode
@@ -64,6 +65,10 @@ class CarNavigationCamera(
             // Initialize the camera at the current location. The next location will
             // transition into the following or overview mode.
             viewportDataSource.onLocationChanged(locationMatcherResult.enhancedLocation)
+            viewportDataSource.followingBearingPropertyOverride(0.0)
+            viewportDataSource.followingPitchPropertyOverride(0.0)
+            //viewportDataSource.followingZoomPropertyOverride(16.0)
+            //viewportDataSource.clearFollowingOverrides()
             viewportDataSource.evaluate()
             if (!isLocationInitialized) {
                 isLocationInitialized = true
@@ -72,9 +77,11 @@ class CarNavigationCamera(
                     .build()
                 when (initialCarCameraMode) {
                     CarCameraMode.IDLE -> navigationCamera.requestNavigationCameraToIdle()
-                    CarCameraMode.FOLLOWING -> navigationCamera.requestNavigationCameraToFollowing(
-                        stateTransitionOptions = instantTransition,
-                    )
+                    CarCameraMode.FOLLOWING -> {
+                        navigationCamera.requestNavigationCameraToFollowing(
+                            stateTransitionOptions = instantTransition,
+                        )
+                    }
                     CarCameraMode.OVERVIEW -> navigationCamera.requestNavigationCameraToOverview(
                         stateTransitionOptions = instantTransition,
                     )
@@ -104,7 +111,7 @@ class CarNavigationCamera(
 
         val mapboxMap = mapboxCarMapSurface.mapSurface.getMapboxMap()
         initialCameraOptions?.let { mapboxMap.setCamera(it) }
-        viewportDataSource = MapboxNavigationViewportDataSource(
+        viewportDataSource = CustomNavigationViewportDataSouce(
             mapboxCarMapSurface.mapSurface.getMapboxMap()
         )
         navigationCamera = NavigationCamera(

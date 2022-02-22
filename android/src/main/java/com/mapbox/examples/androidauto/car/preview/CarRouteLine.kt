@@ -67,7 +67,7 @@ class CarRouteLine(
     }
 
     private val routesObserver = RoutesObserver { result ->
-        logAndroidAuto("CarRouteLine onRoutesChanged ${result.routes.size}")
+        //logAndroidAuto("CarRouteLine onRoutesChanged ${result.routes.size}")
         val carMapSurface = mainCarContext.mapboxCarMap.mapboxCarMapSurface!!
         if (result.routes.isNotEmpty()) {
             val routeLines = result.routes.map { RouteLine(it, null) }

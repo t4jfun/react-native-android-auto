@@ -6,6 +6,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import androidx.car.app.model.*
+import androidx.car.app.navigation.model.Maneuver
 import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.car.app.notification.CarNotificationManager
 import androidx.core.app.NotificationChannelCompat
@@ -25,11 +26,9 @@ import com.mapbox.examples.androidauto.BaseCarScreen
 import com.mapbox.examples.androidauto.car.MainMapActionStrip
 import com.mapbox.examples.androidauto.car.preview.CarRouteLine
 import com.mapbox.geojson.Point
-import com.mapbox.maps.extension.style.layers.addLayerBelow
 import com.mapbox.maps.plugin.annotation.AnnotationConfig
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.LocationComponentConstants
 import com.mapbox.navigation.base.trip.model.RouteLegProgress
@@ -55,7 +54,8 @@ class ActiveGuidanceScreen(
     private val directionsRoutes: List<DirectionsRoute>?,
     private val onBackPressedCallback: () -> Unit,
     private val showNotificationDebugButton: Boolean? = false,
-    private val waypointPoints: MutableList<Point>
+    private val waypointPoints: MutableList<Point>,
+    private val maneuvers: MutableMap<Point, String> = mutableMapOf()
 ) : BaseCarScreen(carActiveGuidanceContext.carContext) {
 
     val carRouteLine = CarRouteLine(carActiveGuidanceContext.mainCarContext)
@@ -97,7 +97,7 @@ class ActiveGuidanceScreen(
     val started = _started.asStateFlow()
 
     private val carAudioGuidanceUi = CarAudioGuidanceUi(this)
-    private val carRouteProgressObserver = CarNavigationInfoObserver(carActiveGuidanceContext)
+    private val carRouteProgressObserver = CarNavigationInfoObserver(carActiveGuidanceContext, maneuvers)
     private val mapActionStripBuilder = MainMapActionStrip(this, carNavigationCamera)
     private val offRouteObserver = object : OffRouteObserver {
         override fun onOffRouteStateChanged(offRoute: Boolean) {

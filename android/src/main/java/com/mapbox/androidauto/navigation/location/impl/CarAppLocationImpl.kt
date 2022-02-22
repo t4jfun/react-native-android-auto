@@ -21,15 +21,15 @@ internal class CarAppLocationImpl : CarAppLocation, MapboxNavigationObserver {
 
         override fun onNewLocationMatcherResult(locationMatcherResult: LocationMatcherResult) {
             //logAndroidAuto("onNewLocationMatcherResult $locationMatcherResult")
-//            navigationLocationProvider.changePosition(
-//                locationMatcherResult.enhancedLocation,
-//                locationMatcherResult.keyPoints,
-//            )
+            navigationLocationProvider.changePosition(
+                locationMatcherResult.enhancedLocation,
+                locationMatcherResult.keyPoints,
+            )
         }
 
         override fun onNewRawLocation(rawLocation: Location) {
             // no op
-            navigationLocationProvider.changePosition(rawLocation)
+            //navigationLocationProvider.changePosition(rawLocation)
         }
     }
 
