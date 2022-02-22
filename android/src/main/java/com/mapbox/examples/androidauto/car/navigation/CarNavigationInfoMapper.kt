@@ -27,7 +27,7 @@ class CarNavigationInfoMapper(
     fun mapNavigationInfo(
         expectedManeuvers: Expected<ManeuverError, List<Maneuver>>?,
         routeProgress: RouteProgress?,
-        textOverrides: List<String>
+        textOverrides: List<String?>
     ): NavigationTemplate.NavigationInfo? {
         val currentStepProgress = routeProgress?.currentLegProgress?.currentStepProgress
         val distanceRemaining = currentStepProgress?.distanceRemaining ?: return null
@@ -39,8 +39,8 @@ class CarNavigationInfoMapper(
             carManeuverIconRenderer.renderManeuverIcon(primaryManeuver)?.let {
                 carManeuver.setIcon(it)
             }
-            val text = if(textOverrides.size > 0) textOverrides[0] else primaryManeuver.text
-            val step = Step.Builder(text)
+            val text = if(textOverrides.isNotEmpty() && textOverrides[0] != null) textOverrides[0] else primaryManeuver.text
+            val step = Step.Builder(text!!)
                 .setManeuver(carManeuver.build())
                 .useMapboxLaneGuidance(carLanesImageGenerator, maneuver.laneGuidance)
                 .build()

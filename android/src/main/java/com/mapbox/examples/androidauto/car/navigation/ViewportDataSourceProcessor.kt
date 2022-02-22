@@ -190,7 +190,7 @@ internal object ViewportDataSourceProcessor {
             // todo bottom slice might not be needed since we always append the user location
             val lineSliceCoordinatesForLookaheadDistance = TurfMisc.lineSliceAlong(
                 LineString.fromLngLats(currentStepFullPoints),
-                distanceTraveledOnStepKM,
+                min(0.5, distanceTraveledOnStepKM),
                 min(0.5, lookaheadDistanceForZoom),
                 TurfConstants.UNIT_KILOMETERS
             ).coordinates()

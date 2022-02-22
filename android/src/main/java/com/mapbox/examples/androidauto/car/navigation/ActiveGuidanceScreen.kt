@@ -55,7 +55,7 @@ class ActiveGuidanceScreen(
     private val onBackPressedCallback: () -> Unit,
     private val showNotificationDebugButton: Boolean? = false,
     private val waypointPoints: MutableList<Point>,
-    private val waypoints: MutableList<Maneuver> = mutableListOf<Maneuver>()
+    private val maneuvers: MutableMap<Point, String> = mutableMapOf()
 ) : BaseCarScreen(carActiveGuidanceContext.carContext) {
 
     val carRouteLine = CarRouteLine(carActiveGuidanceContext.mainCarContext)
@@ -97,7 +97,7 @@ class ActiveGuidanceScreen(
     val started = _started.asStateFlow()
 
     private val carAudioGuidanceUi = CarAudioGuidanceUi(this)
-    private val carRouteProgressObserver = CarNavigationInfoObserver(carActiveGuidanceContext, waypoints)
+    private val carRouteProgressObserver = CarNavigationInfoObserver(carActiveGuidanceContext, maneuvers)
     private val mapActionStripBuilder = MainMapActionStrip(this, carNavigationCamera)
     private val offRouteObserver = object : OffRouteObserver {
         override fun onOffRouteStateChanged(offRoute: Boolean) {
