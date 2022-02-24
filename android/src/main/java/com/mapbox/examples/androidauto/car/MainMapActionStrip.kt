@@ -13,6 +13,7 @@ class MainMapActionStrip(
     private val screen: Screen,
     private val carNavigationCamera: CarNavigationCamera
 ) {
+    private var customAction: Action? = null
     init {
         carNavigationCamera.customCameraMode.observe(screen) {
             screen.invalidate()
@@ -21,16 +22,24 @@ class MainMapActionStrip(
 
     fun build(): ActionStrip {
         val mapActionStripBuilder = ActionStrip.Builder()
-            .addAction(buildPanAction())
+            //.addAction(buildPanAction())
+
+        if(customAction != null) mapActionStripBuilder.addAction(customAction!!)
+
         if (carNavigationCamera.customCameraMode.value != null && carNavigationCamera.customCameraMode.value != CarCameraMode.FOLLOWING) {
             mapActionStripBuilder.addAction(
                 buildRecenterAction(carNavigationCamera)
             )
         }
-        return mapActionStripBuilder
+        mapActionStripBuilder
             .addAction(buildZoomInAction(carNavigationCamera))
             .addAction(buildZoomOutAction(carNavigationCamera))
-            .build()
+
+        return mapActionStripBuilder.build()
+    }
+
+    fun updateCustomAction(action: Action){
+        customAction = action
     }
 
     private fun buildPanAction() = Action.Builder(Action.PAN)
