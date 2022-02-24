@@ -714,12 +714,6 @@ class CustomNavigationViewportDataSouce(
         //logAndroidAuto("updateFollowingData, ${followingBearingProperty.override}, ${followingBearingProperty.fallback}")
         //logAndroidAuto("zoom, ${mapboxMap.cameraState.zoom}")
         //logAndroidAuto("zoom, ${pointsToFrameOnCurrentStep}")
-        pointsToFrameOnCurrentStep.forEach {
-            if (targetLocation != null){
-                val distance = it.distanceTo(Point.fromLngLat(targetLocation!!.longitude, targetLocation!!.latitude))
-                //logAndroidAuto("distance in meters, ${distance}")
-            }
-        }
         //logAndroidAuto("------------")
         val pointsForFollowing: MutableList<Point> = pointsToFrameOnCurrentStep.toMutableList()
         val localTargetLocation = targetLocation

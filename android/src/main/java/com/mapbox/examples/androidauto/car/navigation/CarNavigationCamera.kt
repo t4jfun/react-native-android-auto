@@ -42,6 +42,9 @@ class CarNavigationCamera(
     private val _carCameraMode = MutableLiveData<CarCameraMode?>(null)
     val customCameraMode: LiveData<CarCameraMode?> = _carCameraMode
 
+    private val _carRenderMode = MutableLiveData<CarRenderMode>(CarRenderMode.RENDER_3D)
+    val customRenderMode: LiveData<CarRenderMode> = _carRenderMode
+
     private val overviewPaddingPx by lazy {
         mapboxNavigation.navigationOptions.applicationContext.dpToPx(
             OVERVIEW_PADDING_DP
@@ -65,10 +68,13 @@ class CarNavigationCamera(
             // Initialize the camera at the current location. The next location will
             // transition into the following or overview mode.
             viewportDataSource.onLocationChanged(locationMatcherResult.enhancedLocation)
-            viewportDataSource.followingBearingPropertyOverride(0.0)
-            viewportDataSource.followingPitchPropertyOverride(0.0)
+            if(_carRenderMode.value == CarRenderMode.RENDER_2D){
+                viewportDataSource.followingBearingPropertyOverride(0.0)
+                viewportDataSource.followingPitchPropertyOverride(0.0)
+            } else {
+                viewportDataSource.clearFollowingOverrides()
+            }
             //viewportDataSource.followingZoomPropertyOverride(16.0)
-            //viewportDataSource.clearFollowingOverrides()
             viewportDataSource.evaluate()
             if (!isLocationInitialized) {
                 isLocationInitialized = true
@@ -137,12 +143,34 @@ class CarNavigationCamera(
         )
 
         val visibleHeight = visibleArea.bottom - visibleArea.top
-        viewportDataSource.followingPadding = EdgeInsets(
-            edgeInsets.top + followingPaddingPx,
-            edgeInsets.left + followingPaddingPx,
-            edgeInsets.bottom + visibleHeight * BOTTOM_FOLLOWING_FRACTION,
-            edgeInsets.right + followingPaddingPx
-        )
+
+        viewportDataSource.followingPadding =
+            when (_carRenderMode.value) {
+                CarRenderMode.RENDER_2D -> {
+                    EdgeInsets(
+                        edgeInsets.top + followingPaddingPx,
+                        edgeInsets.left + followingPaddingPx,
+                        edgeInsets.bottom + visibleHeight,
+                        edgeInsets.right + followingPaddingPx
+                    )
+                }
+                CarRenderMode.RENDER_3D -> {
+                    EdgeInsets(
+                        edgeInsets.top + followingPaddingPx,
+                        edgeInsets.left + followingPaddingPx,
+                        edgeInsets.bottom + visibleHeight * BOTTOM_FOLLOWING_FRACTION,
+                        edgeInsets.right + followingPaddingPx
+                    )
+                }
+                else -> {
+                    EdgeInsets(
+                        edgeInsets.top + followingPaddingPx,
+                        edgeInsets.left + followingPaddingPx,
+                        edgeInsets.bottom + visibleHeight * BOTTOM_FOLLOWING_FRACTION,
+                        edgeInsets.right + followingPaddingPx
+                    )
+                }
+            }
 
         viewportDataSource.evaluate()
     }
@@ -170,6 +198,7 @@ class CarNavigationCamera(
     }
 
     fun updateCameraMode(carCameraMode: CarCameraMode) {
+        if (!::navigationCamera.isInitialized) return
         _carCameraMode.value = if (carCameraMode != initialCarCameraMode) {
             carCameraMode
         } else {
@@ -180,6 +209,10 @@ class CarNavigationCamera(
             CarCameraMode.FOLLOWING -> navigationCamera.requestNavigationCameraToFollowing()
             CarCameraMode.OVERVIEW -> navigationCamera.requestNavigationCameraToOverview()
         }
+    }
+
+    fun updateRenderMode(carRenderMode: CarRenderMode) {
+        _carRenderMode.value = carRenderMode
     }
 
     /**

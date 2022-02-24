@@ -5,3 +5,8 @@ enum class CarCameraMode {
     FOLLOWING,
     OVERVIEW
 }
+
+enum class CarRenderMode {
+    RENDER_3D,
+    RENDER_2D,
+}

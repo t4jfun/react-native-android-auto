@@ -5,12 +5,14 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.DrawableRes
 import androidx.car.app.model.*
 import androidx.car.app.navigation.model.Maneuver
 import androidx.car.app.navigation.model.NavigationTemplate
 import androidx.car.app.notification.CarNotificationManager
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.*
 import com.mapbox.androidauto.FreeDriveState
 import com.mapbox.androidauto.MapboxCarApp
@@ -54,6 +56,7 @@ class ActiveGuidanceScreen(
     private val directionsRoutes: List<DirectionsRoute>?,
     private val onBackPressedCallback: () -> Unit,
     private val showNotificationDebugButton: Boolean? = false,
+    private val alertTooFar: Boolean = false,
     private val waypointPoints: MutableList<Point>,
     private val maneuvers: MutableMap<Point, String> = mutableMapOf()
 ) : BaseCarScreen(carActiveGuidanceContext.carContext) {
@@ -91,10 +94,16 @@ class ActiveGuidanceScreen(
     private var mOffRouteState : Boolean = false
     private var mOffRouteTime : Long? = null
     private var mOffRouteTimer : TimerTask? = null
+    private var mTooFarNotificationShowed : Boolean = false
+    private var mBackupCameraMode : CarCameraMode = CarCameraMode.OVERVIEW
+    private var mPaused : Boolean = false
+
 
     var overviewed = false
     val _started = MutableStateFlow(false)
     val started = _started.asStateFlow()
+    val _renderMode = MutableStateFlow(CarRenderMode.RENDER_3D)
+    val renderMode = _renderMode.asStateFlow()
 
     private val carAudioGuidanceUi = CarAudioGuidanceUi(this)
     private val carRouteProgressObserver = CarNavigationInfoObserver(carActiveGuidanceContext, maneuvers)
@@ -213,12 +222,21 @@ class ActiveGuidanceScreen(
                         index += 1
                     }
 
+                    if(alertTooFar && !mTooFarNotificationShowed){
+                        sendNotification(
+                            carContext.getString(R.string.car_error_title),
+                            carContext.getString(R.string.car_error_message)
+                        )
+                        mTooFarNotificationShowed = true
+                    }
+
                 }, 1000)
 
             }
 
             override fun onPause(owner: LifecycleOwner) {
                 logAndroidAuto("ActiveGuidanceScreen onPause")
+                mPaused = true
                 carActiveGuidanceContext.mapboxCarMap.unregisterObserver(roadLabelSurfaceLayer)
                 carActiveGuidanceContext.mapboxCarMap.unregisterObserver(carLocationRenderer)
                 carActiveGuidanceContext.mapboxCarMap.unregisterObserver(carSpeedLimitRenderer)
@@ -279,10 +297,27 @@ class ActiveGuidanceScreen(
         if (!started.value && !overviewed) {
             Handler(Looper.getMainLooper()).postDelayed({
                 try {
+                    mBackupCameraMode = CarCameraMode.OVERVIEW
+                    carNavigationCamera.updateCameraMode(
+                        mBackupCameraMode
+                    )
+                    overviewed = true
+                } catch (e :Exception){
+                    logAndroidAutoFailure("ActiveGuidanceScreen carNavigationCamera.updateCameraMode failed")
+                }
+            }, 1000)
+        }
+
+        if(mPaused){
+            Handler(Looper.getMainLooper()).postDelayed({
+                try {
                     carNavigationCamera.updateCameraMode(
                         CarCameraMode.OVERVIEW
                     )
-                    overviewed = true
+                    carNavigationCamera.updateCameraMode(
+                        mBackupCameraMode
+                    )
+                    mPaused = false
                 } catch (e :Exception){
                     logAndroidAutoFailure("ActiveGuidanceScreen carNavigationCamera.updateCameraMode failed")
                 }
@@ -309,6 +344,8 @@ class ActiveGuidanceScreen(
                     stopNavigation()
                     _started.value = false
                     onBackPressedCallback()
+                    val carNotificationManager = CarNotificationManager.from(carContext)
+                    carNotificationManager.cancel(NOTIFICATION_ID)
                 }
                 .build()
         )
@@ -318,6 +355,10 @@ class ActiveGuidanceScreen(
         .addAction(
             carAudioGuidanceUi.buildSoundButtonAction()
         )
+//        .addAction(
+//            buildRenderModeButtonAction()
+//        )
+        mapActionStripBuilder.updateCustomAction(buildRenderModeButtonAction())
         val builder = NavigationTemplate.Builder()
             .setBackgroundColor(CarColor.PRIMARY)
             .setActionStrip(
@@ -341,8 +382,9 @@ class ActiveGuidanceScreen(
             Action.Builder()
                 .setTitle(carContext.getString(R.string.car_action_navigation_go_button))
                 .setOnClickListener {
+                    mBackupCameraMode = CarCameraMode.FOLLOWING
                     carNavigationCamera.updateCameraMode(
-                        CarCameraMode.FOLLOWING
+                        mBackupCameraMode
                     )
                     carRouteProgressObserver.start {
                         invalidate()
@@ -357,10 +399,43 @@ class ActiveGuidanceScreen(
                     stopNavigation()
                     _started.value = false
                     onBackPressedCallback()
+                    val carNotificationManager = CarNotificationManager.from(carContext)
+                    carNotificationManager.cancel(NOTIFICATION_ID)
                 }
                 .build()
         }
     }
+
+    private fun buildRenderModeButtonAction(): Action {
+        return when (renderMode.value){
+            CarRenderMode.RENDER_2D -> {
+                buildIconAction(R.drawable.ic_2d_24) {
+                    // OnClick
+                    _renderMode.value = CarRenderMode.RENDER_3D
+                    carNavigationCamera.updateRenderMode(_renderMode.value)
+                    invalidate()
+                }
+            }
+            CarRenderMode.RENDER_3D -> {
+                buildIconAction(R.drawable.ic_3d_24) {
+                    // OnClick
+                    _renderMode.value = CarRenderMode.RENDER_2D
+                    carNavigationCamera.updateRenderMode(_renderMode.value)
+                    invalidate()
+                }
+            }
+        }
+
+    }
+
+    private fun buildIconAction(@DrawableRes icon: Int, onClick: () -> Unit) = Action.Builder()
+        .setIcon(
+            CarIcon.Builder(
+                IconCompat.createWithResource(carContext, icon)
+            ).build()
+        )
+        .setOnClickListener { onClick() }
+        .build()
 
     private fun stopNavigation() {
         logAndroidAuto("ActiveGuidanceScreen stopNavigation")
