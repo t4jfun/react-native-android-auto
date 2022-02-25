@@ -207,7 +207,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
             } else {
                 // else if endswith screen:
                 var waypointPoints = mutableListOf<Point>()
-                var manueverPoints = mutableMapOf<Point, String>()
+                //val manueverPoints = mutableMapOf<Point, String>()
                 Log.d("ReactAUTO", "----------------------")
                 val waypoints = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getArray("waypoints")
                 val destination = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getString("destination")
@@ -216,8 +216,8 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                     // { NativeMap: {"data":{"type":"Feature","geometry":{"type":"Point","coordinates":[-123.714487,39.86334]},"properties":{"body":"Zero odometer at T junction. Turn left.","interval":"0.4","mileage":"0.0","direction":"arrow-left"}}} }
                     val data = waypoint?.getMap("data")
                     val geometry = data?.getMap("geometry")
-                    val properties = data?.getMap("properties")
-                    val body = properties?.getString("body")
+                    //val properties = data?.getMap("properties")
+                    //val body = properties?.getString("body")
                     val coordinates = geometry?.getArray("coordinates")
                     // Geometry: { NativeMap: {"type":"Point","coordinates":[-123.775287,39.577113]} }
                     //logAndroidAuto("waypoint $waypoint")
@@ -226,7 +226,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                         coordinates.getDouble(1)
                     )
                     waypointPoints.add(point)
-                    manueverPoints[point] = body!!
+                    //manueverPoints[point] = body!!
                 }
 
                 Log.d("ReactAUTO", "Points: $waypointPoints")
@@ -305,7 +305,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                                 showNotification,
                                 alertTooFar,
                                 waypointPoints,
-                                manueverPoints
+                                //manueverPoints
                             )
 
                             reactCarRenderContextMap.remove(screen)

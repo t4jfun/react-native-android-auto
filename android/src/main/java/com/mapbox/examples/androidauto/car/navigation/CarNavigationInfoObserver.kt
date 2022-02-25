@@ -54,28 +54,26 @@ class CarNavigationInfoObserver(
 
     private fun updateNavigationInfo() {
         //logAndroidAuto("Expected maneuvers: ${expectedManeuvers?.value}")
-        //expectedManeuvers?.value?.get()
         val overrides = mutableListOf<String?>()
-        // TODO: find nearest in waypoints with a limit distance, if the target is too far, use the default maneuver with override
-        if(expectedManeuvers != processedExpectedManeuvers){
-            expectedManeuvers?.value?.forEach {
-                if(!maneuverOverrideMap.containsKey(it)){
-                    var distance = 50.0
-                    maneuvers.forEach { maneuver ->
-                        if (it.maneuverPoint.distanceTo(maneuver.key) < distance){
-                            maneuverOverrideMap[it] = maneuver.value
-                            distance = it.maneuverPoint.distanceTo(maneuver.key)
-                            logAndroidAuto("Override maneuver: $it to ${maneuver.value}")
-                        }
-                    }
-
-                }
-
-                overrides.add(maneuverOverrideMap[it])
-
-            }
-            processedExpectedManeuvers = expectedManeuvers
-        }
+//        if(expectedManeuvers != processedExpectedManeuvers){
+//            expectedManeuvers?.value?.forEach {
+//                if(!maneuverOverrideMap.containsKey(it)){
+//                    var distance = 50.0
+//                    maneuvers.forEach { maneuver ->
+//                        if (it.maneuverPoint.distanceTo(maneuver.key) < distance){
+//                            maneuverOverrideMap[it] = maneuver.value
+//                            distance = it.maneuverPoint.distanceTo(maneuver.key)
+//                            logAndroidAuto("Override maneuver: $it to ${maneuver.value}")
+//                        }
+//                    }
+//
+//                }
+//
+//                overrides.add(maneuverOverrideMap[it])
+//
+//            }
+//            processedExpectedManeuvers = expectedManeuvers
+//        }
 
         this.navigationInfo = carActiveGuidanceCarContext.navigationInfoMapper
             .mapNavigationInfo(expectedManeuvers, routeProgress, overrides)
