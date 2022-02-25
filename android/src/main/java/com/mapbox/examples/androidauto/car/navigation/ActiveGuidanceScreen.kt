@@ -355,10 +355,10 @@ class ActiveGuidanceScreen(
         .addAction(
             carAudioGuidanceUi.buildSoundButtonAction()
         )
-//        .addAction(
-//            buildRenderModeButtonAction()
-//        )
-        mapActionStripBuilder.updateCustomAction(buildRenderModeButtonAction())
+        .addAction(
+            buildRenderModeButtonAction()
+        )
+        // mapActionStripBuilder.updateCustomAction(buildRenderModeButtonAction())
         val builder = NavigationTemplate.Builder()
             .setBackgroundColor(CarColor.PRIMARY)
             .setActionStrip(
@@ -425,7 +425,6 @@ class ActiveGuidanceScreen(
                 }
             }
         }
-
     }
 
     private fun buildIconAction(@DrawableRes icon: Int, onClick: () -> Unit) = Action.Builder()
