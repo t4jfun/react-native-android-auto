@@ -245,90 +245,100 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                     ) as MutableList<Point>
                 }
                 val maxDistanceAllowedInKm = 0.402336
+                var alertTooFar = false
                 if(
                     location == null ||
                     ( waypointPoints.size > 1 &&
                     distance(waypointPoints.get(0), Point.fromLngLat(location.longitude, location.latitude)) > maxDistanceAllowedInKm))
                 {
-                    screen = ErrorScreen(mCarContext!!.carContext)
+                    alertTooFar = true
+//                    screen = ErrorScreen(mCarContext!!.carContext)
+//
+//                    reactCarRenderContextMap.remove(screen)
+//                    reactCarRenderContextMap[screen] = reactCarRenderContext
+//                    screen?.marker = name
+//                    carScreens[name] = screen
+//                    Log.d("ReactAUTO", carScreens.toString())
+//                    mCurrentCarScreen = screen
+//                    Log.i("ReactAUTO", "pushScreen $screen")
+//                    mScreenManager!!.push(screen!!)
+                }
+                // Navigation view
+                Log.d("ReactAUTO", "routePrevMap after")
 
-                    reactCarRenderContextMap.remove(screen)
-                    reactCarRenderContextMap[screen] = reactCarRenderContext
-                    screen?.marker = name
-                    carScreens[name] = screen
-                    Log.d("ReactAUTO", carScreens.toString())
-                    mCurrentCarScreen = screen
-                    Log.i("ReactAUTO", "pushScreen $screen")
-                    mScreenManager!!.push(screen!!)
-                } else {
-                    // Navigation view
-                    Log.d("ReactAUTO", "routePrevMap after")
+                currentRequestId?.let { searchCarContext.carRouteRequest.mapboxNavigation.cancelRouteRequest(it) }
+                currentRequestId = searchCarContext.carRouteRequest.mapboxNavigation.requestRoutes(
+                    RouteOptions.builder()
+                        .applyDefaultNavigationOptions()
+                        .profile(DirectionsCriteria.PROFILE_DRIVING)
+                        .coordinatesList(waypointPoints)
+                        .waypointIndicesList(listOf(0, waypointPoints.size-1))
+                        .waypointNamesList(listOf("", destination))
+                        .build(),
+                    routesRequestCallback = object : RouterCallback {
 
-                    currentRequestId?.let { searchCarContext.carRouteRequest.mapboxNavigation.cancelRouteRequest(it) }
-                    currentRequestId = searchCarContext.carRouteRequest.mapboxNavigation.requestRoutes(
-                        RouteOptions.builder()
-                            .applyDefaultNavigationOptions()
-                            .profile(DirectionsCriteria.PROFILE_DRIVING)
-                            .coordinatesList(waypointPoints)
-                            .waypointIndicesList(listOf(0, waypointPoints.size-1))
-                            .waypointNamesList(listOf("", destination))
-                            .build(),
-                        routesRequestCallback = object : RouterCallback {
+                        override fun onRoutesReady(
+                            routes: List<DirectionsRoute>,
+                            routerOrigin: RouterOrigin
+                        ) {
+                            //Log.d("ReactAUTO", "onRoutesReady --- : $routes");
 
-                            override fun onRoutesReady(
-                                routes: List<DirectionsRoute>,
-                                routerOrigin: RouterOrigin
-                            ) {
-                                Log.d("ReactAUTO", "onRoutesReady --- : $routes");
-
-                                val carActiveGuidanceCarContext = CarActiveGuidanceCarContext(mCarContext!!)
-                                val showNotification = try {
-                                    renderMap.getBoolean("notification")
-                                } catch (e: NoSuchKeyException) {
-                                    false
-                                }
-
-                                screen = ActiveGuidanceScreen(
-                                    carActiveGuidanceCarContext,
-                                    routes,
-                                    onBackPressedCallback,
-                                    showNotification,
-                                    waypointPoints,
-                                    manueverPoints
-                                )
-
-
-                                reactCarRenderContextMap.remove(screen)
-                                reactCarRenderContextMap[screen] = reactCarRenderContext
-                                screen?.marker = name
-                                carScreens[name] = screen
-                                Log.d("ReactAUTO", carScreens.toString())
-                                mCurrentCarScreen = screen
-                                Log.i("ReactAUTO", "pushScreen $screen")
-                                mScreenManager!!.push(screen!!)
-                                carActiveGuidanceCarContext.mapboxNavigation.setRoutes(routes)
+                            val carActiveGuidanceCarContext = CarActiveGuidanceCarContext(mCarContext!!)
+                            val showNotification = try {
+                                renderMap.getBoolean("notification")
+                            } catch (e: NoSuchKeyException) {
+                                false
                             }
 
-                            override fun onCanceled(
-                                routeOptions: RouteOptions,
-                                routerOrigin: RouterOrigin
-                            ) {
-                                Log.d("ReactAUTO", "RouteRequest onCanceled");
+                            //val stepBuilder = routes.get(0).legs()?.get(0)?.steps()?.get(0)?.toBuilder()
+                            //stepBuilder?.maneuver(customemanouver)
 
-                            }
+//                                Log.d("ReactAUTO", "voice --- : \n${routes.get(0).legs()?.get(0)?.steps()?.get(0)?.voiceInstructions()}");
+//                                Log.d("ReactAUTO", "bannerInstruction --- : \n${routes.get(0).legs()?.get(0)?.steps()?.get(0)?.bannerInstructions()}");
+//                                Log.d("ReactAUTO", "intersections --- : \n${routes.get(0).legs()?.get(0)?.steps()?.get(0)?.intersections()}");
+//                                Log.d("ReactAUTO", "maneuver --- : \n${routes.get(0).legs()?.get(0)?.steps()?.get(0)?.maneuver()}");
 
-                            override fun onFailure(
-                                reasons: List<RouterFailure>,
-                                routeOptions: RouteOptions
-                            ) {
-                                Log.d("ReactAUTO", "RouteRequest onFailure");
-                            }
+                            screen = ActiveGuidanceScreen(
+                                carActiveGuidanceCarContext,
+                                routes,
+                                onBackPressedCallback,
+                                showNotification,
+                                alertTooFar,
+                                waypointPoints,
+                                manueverPoints
+                            )
+
+                            reactCarRenderContextMap.remove(screen)
+                            reactCarRenderContextMap[screen] = reactCarRenderContext
+                            screen?.marker = name
+                            carScreens[name] = screen
+                            Log.d("ReactAUTO", carScreens.toString())
+                            mCurrentCarScreen = screen
+                            Log.i("ReactAUTO", "pushScreen $screen")
+                            mScreenManager!!.push(screen!!)
+                            carActiveGuidanceCarContext.mapboxNavigation.setRoutes(routes)
+                        }
+
+                        override fun onCanceled(
+                            routeOptions: RouteOptions,
+                            routerOrigin: RouterOrigin
+                        ) {
+                            Log.d("ReactAUTO", "RouteRequest onCanceled");
 
                         }
-                    )
+
+                        override fun onFailure(
+                            reasons: List<RouterFailure>,
+                            routeOptions: RouteOptions
+                        ) {
+                            Log.d("ReactAUTO", "RouteRequest onFailure");
+                        }
+
+                    }
+                )
 
 
-                }
+
 
             }
         }
