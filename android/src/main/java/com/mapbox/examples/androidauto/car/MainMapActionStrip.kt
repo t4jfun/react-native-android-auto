@@ -22,7 +22,7 @@ class MainMapActionStrip(
 
     fun build(): ActionStrip {
         val mapActionStripBuilder = ActionStrip.Builder()
-            //.addAction(buildPanAction())
+            .addAction(buildPanAction())
 
         if(customAction != null) mapActionStripBuilder.addAction(customAction!!)
 
@@ -38,9 +38,9 @@ class MainMapActionStrip(
         return mapActionStripBuilder.build()
     }
 
-    fun updateCustomAction(action: Action){
-        customAction = action
-    }
+//    fun updateCustomAction(action: Action){
+//        customAction = action
+//    }
 
     private fun buildPanAction() = Action.Builder(Action.PAN)
         .setIcon(
