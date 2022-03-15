@@ -34,7 +34,7 @@ class FollowingFrameOptions internal constructor() {
      *
      * Defaults to `10.5`.
      */
-    var minZoom = 14.5
+    var minZoom = 10.5
 
     /**
      * The max zoom that will be generated for camera following frames.

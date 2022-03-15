@@ -31,6 +31,7 @@ import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.examples.androidauto.car.navigation.ActiveGuidanceScreen
 import com.mapbox.examples.androidauto.car.navigation.CarActiveGuidanceCarContext
+import com.mapbox.maps.extension.style.expressions.dsl.generated.step
 import com.mapbox.navigation.base.extensions.applyDefaultNavigationOptions
 import com.mapbox.navigation.base.route.RouterCallback
 import com.mapbox.navigation.base.route.RouterFailure
@@ -195,8 +196,6 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
 
                 // else raise error
                 screen?.marker = name
-                Log.d("ReactAUTO", reactCarRenderContextMap.toString())
-                Log.d("ReactAUTO", carScreens.toString())
                 carScreens[name] = screen
                 Log.d("ReactAUTO", "name: $name")
                 mCurrentCarScreen = screen
@@ -206,11 +205,18 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
 
             } else {
                 // else if endswith screen:
+                var profile = DirectionsCriteria.PROFILE_DRIVING
                 var waypointPoints = mutableListOf<Point>()
                 //val manueverPoints = mutableMapOf<Point, String>()
                 Log.d("ReactAUTO", "----------------------")
-                val waypoints = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getArray("waypoints")
-                val destination = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")?.getString("destination")
+                Log.d("ReactAUTO", renderMap.toString())
+
+                val metadata = renderMap.getArray("children")?.getMap(0)?.getMap("metadata")
+                val waypoints = metadata?.getArray("waypoints")
+                val destination = metadata?.getString("destination")
+                if(metadata?.hasKey("offroad") == true && metadata.getBoolean("offroad") == true){
+                    profile = DirectionsCriteria.PROFILE_CYCLING
+                }
                 for (i in 0 until waypoints?.size()!!) {
                     val waypoint = waypoints?.getMap(i)
                     // { NativeMap: {"data":{"type":"Feature","geometry":{"type":"Point","coordinates":[-123.714487,39.86334]},"properties":{"body":"Zero odometer at T junction. Turn left.","interval":"0.4","mileage":"0.0","direction":"arrow-left"}}} }
@@ -237,11 +243,12 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                 val useFakePoints = false
                 if(useFakePoints){
                     waypointPoints = listOf(
-                        Point.fromLngLat(location!!.longitude, location.latitude),
+                        //Point.fromLngLat(location!!.longitude, location.latitude),
                         Point.fromLngLat(18.970608, 47.522207),
+                        Point.fromLngLat(18.969998, 47.521167),
                         Point.fromLngLat(18.972462, 47.520275),
-                        Point.fromLngLat(18.974289, 47.518817),
-                        Point.fromLngLat(18.970734, 47.517787)
+//                        Point.fromLngLat(18.974289, 47.518817),
+//                        Point.fromLngLat(18.970734, 47.517787)
                     ) as MutableList<Point>
                 }
                 val maxDistanceAllowedInKm = 0.402336
@@ -264,13 +271,16 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
 //                    mScreenManager!!.push(screen!!)
                 }
                 // Navigation view
-                Log.d("ReactAUTO", "routePrevMap after")
-
+                Log.d("ReactAUTO", "Profile: $profile")
+//                val waypointsForCalculation = if(location !== null && alertTooFar) {
+//                    val tmp = waypointPoints.toMutableList()
+//                    //tmp.add(0, Point.fromLngLat(location.longitude, location.latitude))
+//                    tmp
+//                } else waypointPoints
                 currentRequestId?.let { searchCarContext.carRouteRequest.mapboxNavigation.cancelRouteRequest(it) }
                 currentRequestId = searchCarContext.carRouteRequest.mapboxNavigation.requestRoutes(
                     RouteOptions.builder()
-                        .applyDefaultNavigationOptions()
-                        .profile(DirectionsCriteria.PROFILE_DRIVING)
+                        .applyDefaultNavigationOptions(profile)
                         .coordinatesList(waypointPoints)
                         .waypointIndicesList(listOf(0, waypointPoints.size-1))
                         .waypointNamesList(listOf("", destination))
@@ -312,9 +322,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                             reactCarRenderContextMap[screen] = reactCarRenderContext
                             screen?.marker = name
                             carScreens[name] = screen
-                            Log.d("ReactAUTO", carScreens.toString())
                             mCurrentCarScreen = screen
-                            Log.i("ReactAUTO", "pushScreen $screen")
                             mScreenManager!!.push(screen!!)
                             carActiveGuidanceCarContext.mapboxNavigation.setRoutes(routes)
                         }
