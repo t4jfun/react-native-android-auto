@@ -27,7 +27,8 @@ private fun Point.distanceTo(other: Point): Double{
  */
 class CarNavigationInfoObserver(
     private val carActiveGuidanceCarContext: CarActiveGuidanceCarContext,
-    private val maneuvers: MutableMap<Point, String>
+    private val maneuvers: MutableMap<Point, String>,
+    private val hideTravelEstimate: Boolean = false
 ) {
     private var onNavigationInfoChanged: (() -> Unit)? = null
     var navigationInfo: NavigationTemplate.NavigationInfo? = null
@@ -78,7 +79,9 @@ class CarNavigationInfoObserver(
         this.navigationInfo = carActiveGuidanceCarContext.navigationInfoMapper
             .mapNavigationInfo(expectedManeuvers, routeProgress, overrides)
 
-        this.travelEstimateInfo = carActiveGuidanceCarContext.tripProgressMapper.from(routeProgress)
+        if(!hideTravelEstimate) {
+            this.travelEstimateInfo = carActiveGuidanceCarContext.tripProgressMapper.from(routeProgress)
+        }
     }
 
     fun start(onNavigationInfoChanged: () -> Unit) {
