@@ -206,6 +206,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
             } else {
                 // else if endswith screen:
                 var profile = DirectionsCriteria.PROFILE_DRIVING
+                var offroad = false
                 var waypointPoints = mutableListOf<Point>()
                 //val manueverPoints = mutableMapOf<Point, String>()
                 Log.d("ReactAUTO", "----------------------")
@@ -216,6 +217,7 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                 val destination = metadata?.getString("destination")
                 if(metadata?.hasKey("offroad") == true && metadata.getBoolean("offroad") == true){
                     profile = DirectionsCriteria.PROFILE_CYCLING
+                    offroad = true
                 }
                 for (i in 0 until waypoints?.size()!!) {
                     val waypoint = waypoints?.getMap(i)
@@ -315,7 +317,9 @@ class AndroidAutoModule(private val mReactContext: ReactApplicationContext) : Re
                                 showNotification,
                                 alertTooFar,
                                 waypointPoints,
+                                mutableMapOf(),
                                 //manueverPoints
+                                offroad
                             )
 
                             reactCarRenderContextMap.remove(screen)
